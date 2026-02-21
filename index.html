@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BBO ROLODEX</title>
+    <meta name="description" content="BBO Personal CRM — Capture Everything. Lose Nothing.">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="BBO Rolodex">
+    <meta name="theme-color" content="#000000">
+    <link rel="manifest" href="manifest.json">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'bbo': '#FF1493',
+                        'bbo-light': '#FF69B4',
+                    }
+                }
+            }
+        }
+    </script>
+    <script type="importmap">
+        {
+            "imports": {
+                "@google/generative-ai": "https://esm.run/@google/generative-ai"
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: #000;
+            color: #fff;
+            overscroll-behavior: none;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .drag-glow {
+            border-color: #FF1493 !important;
+            background: rgba(255, 20, 147, 0.08) !important;
+            box-shadow: inset 0 0 60px rgba(255, 20, 147, 0.15);
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .animate-slide-up {
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes cardIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .card-in {
+            animation: cardIn 0.35s ease;
+        }
+
+        .toast-container {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            z-index: 999;
+            transition: all 0.4s ease;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .toast-container.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .bottom-nav {
+            padding-bottom: max(12px, env(safe-area-inset-bottom));
+        }
+
+        .staged-area {
+            position: relative;
+        }
+
+        .staged-img {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .staged-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 14px 16px;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 60%, transparent);
+            border-radius: 0 0 16px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+
+<body class="h-screen flex flex-col overflow-hidden">
+
+    <!-- TOAST -->
+    <div class="toast-container" id="toast">
+        <div
+            class="bg-gray-900 border border-gray-700 rounded-xl px-5 py-3 text-sm font-semibold flex items-center gap-2 shadow-2xl">
+            <span id="toastIcon">✅</span>
+            <span id="toastMsg">Saved!</span>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <header
+        class="px-5 py-4 flex justify-between items-center bg-black/80 backdrop-blur-xl border-b border-white/5 z-30 sticky top-0">
+        <div>
+            <h1 class="text-xl font-black tracking-tight">BBO <span class="text-bbo">ROLODEX</span></h1>
+            <p class="text-[10px] text-gray-500 font-semibold tracking-widest uppercase">Capture everything. Lose
+                nothing.</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <span class="bg-bbo text-white text-[11px] font-bold px-2.5 py-1 rounded-full min-w-[28px] text-center"
+                id="leadCount">0</span>
+            <button id="settingsBtn" class="p-2 rounded-full hover:bg-white/10 transition text-gray-400">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3" />
+                    <path
+                        d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN -->
+    <main class="flex-1 overflow-y-auto no-scrollbar pb-20">
+
+        <!-- TAB: CAPTURE -->
+        <div id="captureTab" class="p-5 space-y-4">
+
+            <!-- Screenshot Drop Zone -->
+            <label id="dropZone"
+                class="group relative flex flex-col items-center justify-center h-52 rounded-2xl border-2 border-dashed border-gray-800 bg-gray-900/40 hover:bg-gray-800/40 transition-all cursor-pointer overflow-hidden">
+                <input type="file" id="imageInput" accept="image/*" class="hidden" capture="environment">
+                <div class="z-10 flex flex-col items-center gap-3 transition-transform group-hover:scale-105">
+                    <div class="p-4 rounded-full bg-gray-800/80 group-hover:bg-bbo/20 transition-colors">
+                        <svg class="w-8 h-8 text-gray-500 group-hover:text-bbo transition-colors" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                    </div>
+                    <div class="text-center">
+                        <span class="text-lg font-bold text-gray-300 block">SCAN DM / SCREENSHOT</span>
+                        <span class="text-[11px] text-gray-600 font-medium">Drag, tap, or use camera — AI extracts the
+                            intel</span>
+                    </div>
+                </div>
+            </label>
+
+            <!-- Staged Screenshot (shown after selecting image) -->
+            <div id="stagedArea" class="hidden staged-area animate-slide-up">
+                <img id="stagedImg" class="staged-img" alt="Screenshot preview">
+                <div class="staged-overlay">
+                    <button
+                        class="px-3 py-1.5 rounded-full bg-white/10 text-white text-xs font-semibold hover:bg-white/20 transition"
+                        onclick="clearStaged()">✕ Clear</button>
+                    <span class="text-[10px] text-gray-400 font-medium">Ready to parse</span>
+                </div>
+            </div>
+
+            <!-- Notes (always visible — type extra context) -->
+            <div>
+                <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">📝 YOUR NOTES
+                    <span class="text-gray-700">(optional)</span></label>
+                <textarea id="manualNotes" rows="3"
+                    class="w-full bg-gray-900/60 border border-gray-800 rounded-xl p-3 text-white text-sm focus:outline-none focus:border-bbo transition leading-relaxed placeholder-gray-600"
+                    placeholder="Type anything you know about this person... &#10;e.g. &quot;Met at the event, wants content day, premium package&quot;"></textarea>
+            </div>
+
+            <!-- Parse Button -->
+            <button id="parseBtn"
+                class="w-full py-3.5 rounded-xl bg-gradient-to-r from-bbo to-bbo-light hover:opacity-90 text-white font-bold text-sm transition shadow-lg shadow-pink-500/20 flex justify-center items-center gap-2 active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed"
+                disabled onclick="submitCapture()">
+                ⚡ PARSE WITH AI
+            </button>
+            <p id="parseHint" class="text-center text-[10px] text-gray-600">Drop a screenshot above to enable parsing
+            </p>
+
+        </div>
+
+        <!-- TAB: LEADS -->
+        <div id="leadsTab" class="hidden p-5 space-y-4">
+            <div class="relative">
+                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+                <input type="text" id="searchInput" placeholder="Search handles, notes..."
+                    class="w-full bg-gray-900/60 border border-gray-800 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-bbo transition">
+            </div>
+            <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                <button
+                    class="filter-chip active shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold border transition"
+                    data-filter="all">All</button>
+                <button
+                    class="filter-chip shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold border border-gray-800 text-gray-500 transition"
+                    data-filter="hot">🔥 Hot</button>
+                <button
+                    class="filter-chip shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold border border-gray-800 text-gray-500 transition"
+                    data-filter="warm">🟡 Warm</button>
+                <button
+                    class="filter-chip shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold border border-gray-800 text-gray-500 transition"
+                    data-filter="cold">🔵 Cold</button>
+                <button
+                    class="filter-chip shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold border border-gray-800 text-gray-500 transition"
+                    data-filter="Lead">Lead</button>
+                <button
+                    class="filter-chip shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold border border-gray-800 text-gray-500 transition"
+                    data-filter="Creator">Creator</button>
+                <button
+                    class="filter-chip shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold border border-gray-800 text-gray-500 transition"
+                    data-filter="Content Day">Content Day</button>
+            </div>
+            <div id="leadsGrid" class="space-y-3"></div>
+        </div>
+
+    </main>
+
+    <!-- BOTTOM NAV -->
+    <nav
+        class="bottom-nav fixed bottom-0 left-0 right-0 bg-black/90 backdrop-blur-xl border-t border-white/5 z-30 flex">
+        <button id="navCapture" class="flex-1 flex flex-col items-center gap-1 py-3 text-bbo transition"
+            onclick="switchTab('capture')">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            <span class="text-[10px] font-bold">CAPTURE</span>
+        </button>
+        <button id="navLeads" class="flex-1 flex flex-col items-center gap-1 py-3 text-gray-600 transition"
+            onclick="switchTab('leads')">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <span class="text-[10px] font-bold">LEADS</span>
+        </button>
+        <button class="flex-1 flex flex-col items-center gap-1 py-3 text-gray-600 transition" onclick="exportCSV()">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <span class="text-[10px] font-bold">EXPORT</span>
+        </button>
+    </nav>
+
+    <!-- LOADING OVERLAY -->
+    <div id="loadingState"
+        class="hidden fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center backdrop-blur-sm">
+        <div class="w-14 h-14 border-[3px] border-bbo border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p class="text-bbo font-bold animate-pulse text-base tracking-wide">PARSING INTEL...</p>
+    </div>
+
+    <!-- RESULTS MODAL -->
+    <div id="resultsModal"
+        class="hidden fixed inset-0 z-40 bg-black/95 flex items-end sm:items-center justify-center backdrop-blur-sm">
+        <div
+            class="w-full max-w-md bg-[#0D0D0D] border border-gray-800 rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden animate-slide-up max-h-[90vh] overflow-y-auto no-scrollbar">
+
+            <div
+                class="p-4 border-b border-gray-800/50 flex justify-between items-center sticky top-0 bg-[#0D0D0D] z-10">
+                <h2 class="text-base font-bold flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                    EXTRACTED DATA
+                </h2>
+                <button id="closeModal" class="p-1 text-gray-500 hover:text-white transition">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="p-5 space-y-4">
+                <div id="modalPreviewWrap" class="hidden">
+                    <img id="modalPreview" class="w-full h-40 object-cover rounded-xl border border-gray-800">
+                </div>
+
+                <div>
+                    <label
+                        class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Handle</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-2.5 text-bbo font-bold text-sm">@</span>
+                        <input type="text" id="resultHandle"
+                            class="w-full bg-gray-900 border border-gray-800 rounded-xl py-2.5 pl-8 pr-3 text-white text-sm focus:outline-none focus:border-bbo transition font-mono"
+                            placeholder="username">
+                    </div>
+                </div>
+
+                <div>
+                    <label
+                        class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Category</label>
+                    <select id="resultCategory"
+                        class="w-full bg-gray-900 border border-gray-800 rounded-xl p-2.5 text-white text-sm focus:outline-none focus:border-bbo transition appearance-none">
+                        <option value="Lead">💰 Lead (Potential Customer)</option>
+                        <option value="Content Day">📸 Content Day</option>
+                        <option value="Creator">🎬 Creator / Talent</option>
+                        <option value="Partner">🤝 Brand Partner</option>
+                        <option value="Hoodie">👕 Hoodie / Merch</option>
+                        <option value="Event">🎤 Event</option>
+                        <option value="Personal">💜 Personal / Vibe</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label
+                        class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Urgency</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="urgency" value="hot" class="hidden peer">
+                            <div
+                                class="text-center py-2 rounded-xl border border-gray-800 text-xs font-bold text-gray-500 peer-checked:border-bbo peer-checked:bg-bbo/10 peer-checked:text-bbo transition">
+                                🔥 HOT</div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="urgency" value="warm" class="hidden peer" checked>
+                            <div
+                                class="text-center py-2 rounded-xl border border-gray-800 text-xs font-bold text-gray-500 peer-checked:border-yellow-500 peer-checked:bg-yellow-500/10 peer-checked:text-yellow-400 transition">
+                                🟡 WARM</div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="urgency" value="cold" class="hidden peer">
+                            <div
+                                class="text-center py-2 rounded-xl border border-gray-800 text-xs font-bold text-gray-500 peer-checked:border-blue-500 peer-checked:bg-blue-500/10 peer-checked:text-blue-400 transition">
+                                🔵 COLD</div>
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Context /
+                        Notes</label>
+                    <textarea id="resultContext" rows="3"
+                        class="w-full bg-gray-900 border border-gray-800 rounded-xl p-3 text-white text-sm focus:outline-none focus:border-bbo transition leading-relaxed"
+                        placeholder="What did they want?"></textarea>
+                </div>
+            </div>
+
+            <div class="p-4 border-t border-gray-800/50 flex gap-3 sticky bottom-0 bg-[#0D0D0D]">
+                <button id="copyBtn"
+                    class="flex-1 py-3 rounded-xl bg-gray-900 hover:bg-gray-800 text-white font-bold text-sm transition flex justify-center items-center gap-2 border border-gray-800">
+                    📋 COPY
+                </button>
+                <button id="saveBtn"
+                    class="flex-[2] py-3 rounded-xl bg-gradient-to-r from-bbo to-bbo-light hover:opacity-90 text-white font-bold text-sm transition shadow-lg shadow-pink-500/20 flex justify-center items-center gap-2">
+                    💾 SAVE TO ROSTER
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SETTINGS MODAL -->
+    <div id="settingsModal"
+        class="hidden fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-5 backdrop-blur-sm">
+        <div class="w-full max-w-sm bg-[#0D0D0D] rounded-2xl p-6 border border-gray-800 animate-slide-up">
+            <h3 class="text-lg font-bold mb-5">⚙️ Settings</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Gemini API
+                        Key</label>
+                    <input type="password" id="apiKeyInput"
+                        class="w-full bg-black border border-gray-800 rounded-xl p-3 text-white text-sm focus:outline-none focus:border-bbo transition"
+                        placeholder="Paste your API key...">
+                    <p class="text-[10px] text-gray-600 mt-1">Free from <a href="https://aistudio.google.com/apikey"
+                            target="_blank" class="text-bbo underline">Google AI Studio</a>. Saved locally.</p>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Webhook
+                        URL <span class="text-gray-700">(optional)</span></label>
+                    <input type="text" id="webhookInput"
+                        class="w-full bg-black border border-gray-800 rounded-xl p-3 text-white text-sm focus:outline-none focus:border-bbo transition"
+                        placeholder="https://hook.us1.make.com/...">
+                    <p class="text-[10px] text-gray-600 mt-1">Sends data to Google Sheets / Airtable via Make/Zapier.
+                    </p>
+                </div>
+                <button id="saveSettingsBtn"
+                    class="w-full py-3 bg-white text-black font-bold rounded-xl hover:bg-gray-200 transition text-sm">SAVE
+                    SETTINGS</button>
+                <button class="w-full py-2 text-gray-600 text-xs font-semibold"
+                    onclick="document.getElementById('settingsModal').classList.add('hidden')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT -->
+    <script type="module">
+        import { GoogleGenerativeAI } from "@google/generative-ai";
+
+        // STATE
+        const DB_NAME = 'bbo_rolodex';
+        const DB_VERSION = 1;
+        const STORE = 'leads';
+        let db;
+        let currentFilter = 'all';
+        let stagedBase64 = null;
+        let stagedMime = null;
+        let stagedFull = null;
+
+        // DOM
+        const $ = id => document.getElementById(id);
+        const imageInput = $('imageInput');
+        const dropZone = $('dropZone');
+
+        // INIT
+        await initDB();
+        await renderLeads();
+        loadSettings();
+
+        // INDEXEDDB
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const req = indexedDB.open(DB_NAME, DB_VERSION);
+                req.onupgradeneeded = e => {
+                    const d = e.target.result;
+                    if (!d.objectStoreNames.contains(STORE)) {
+                        const s = d.createObjectStore(STORE, { keyPath: 'id', autoIncrement: true });
+                        s.createIndex('handle', 'handle');
+                        s.createIndex('urgency', 'urgency');
+                        s.createIndex('category', 'category');
+                        s.createIndex('created_at', 'created_at');
+                    }
+                };
+                req.onsuccess = e => { db = e.target.result; resolve(); };
+                req.onerror = e => reject(e);
+            });
+        }
+
+        function dbAdd(lead) {
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(STORE, 'readwrite');
+                tx.objectStore(STORE).add(lead).onsuccess = e => resolve(e.target.result);
+                tx.onerror = e => reject(e);
+            });
+        }
+
+        function dbGetAll() {
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(STORE, 'readonly');
+                tx.objectStore(STORE).getAll().onsuccess = e => resolve(e.target.result);
+                tx.onerror = e => reject(e);
+            });
+        }
+
+        function dbDelete(id) {
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(STORE, 'readwrite');
+                tx.objectStore(STORE).delete(id).onsuccess = () => resolve();
+                tx.onerror = e => reject(e);
+            });
+        }
+
+        // SETTINGS
+        function loadSettings() {
+            const key = localStorage.getItem('bbo_gemini_key');
+            const webhook = localStorage.getItem('bbo_webhook');
+            if (key) $('apiKeyInput').value = key;
+            if (webhook) $('webhookInput').value = webhook;
+            if (!key) $('settingsModal').classList.remove('hidden');
+        }
+
+        $('settingsBtn').addEventListener('click', () => $('settingsModal').classList.remove('hidden'));
+        $('saveSettingsBtn').addEventListener('click', () => {
+            const key = $('apiKeyInput').value.trim();
+            if (!key) return toast('Enter an API key', true);
+            localStorage.setItem('bbo_gemini_key', key);
+            localStorage.setItem('bbo_webhook', $('webhookInput').value.trim());
+            $('settingsModal').classList.add('hidden');
+            toast('Settings saved 💅');
+        });
+
+        // TAB SWITCHING
+        window.switchTab = function (tab) {
+            if (tab === 'capture') {
+                $('captureTab').classList.remove('hidden');
+                $('leadsTab').classList.add('hidden');
+                $('navCapture').classList.replace('text-gray-600', 'text-bbo');
+                $('navLeads').classList.replace('text-bbo', 'text-gray-600');
+            } else {
+                $('captureTab').classList.add('hidden');
+                $('leadsTab').classList.remove('hidden');
+                $('navLeads').classList.replace('text-gray-600', 'text-bbo');
+                $('navCapture').classList.replace('text-bbo', 'text-gray-600');
+                renderLeads();
+            }
+        };
+
+        // DRAG & DROP
+        ['dragenter', 'dragover'].forEach(ev => {
+            dropZone.addEventListener(ev, e => { e.preventDefault(); dropZone.classList.add('drag-glow'); });
+        });
+        ['dragleave', 'drop'].forEach(ev => {
+            dropZone.addEventListener(ev, e => { e.preventDefault(); dropZone.classList.remove('drag-glow'); });
+        });
+        dropZone.addEventListener('drop', e => {
+            const f = e.dataTransfer.files[0];
+            if (f && f.type.startsWith('image/')) stageScreenshot(f);
+        });
+
+        // FILE INPUT
+        imageInput.addEventListener('change', e => {
+            const f = e.target.files[0];
+            if (f) stageScreenshot(f);
+            imageInput.value = '';
+        });
+
+        // STAGE SCREENSHOT (show preview, enable parse button)
+        function stageScreenshot(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                stagedFull = e.target.result;
+                stagedBase64 = stagedFull.split(',')[1];
+                stagedMime = file.type;
+
+                $('stagedImg').src = stagedFull;
+                $('stagedArea').classList.remove('hidden');
+                $('dropZone').classList.add('hidden');
+                $('parseBtn').disabled = false;
+                $('parseHint').textContent = 'Screenshot ready — add notes below if you want, then hit parse';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        window.clearStaged = function () {
+            stagedBase64 = null;
+            stagedMime = null;
+            stagedFull = null;
+            $('stagedArea').classList.add('hidden');
+            $('dropZone').classList.remove('hidden');
+            $('parseBtn').disabled = true;
+            $('parseHint').textContent = 'Drop a screenshot above to enable parsing';
+        };
+
+        // SUBMIT — parse screenshot + optional typed notes
+        window.submitCapture = async function () {
+            if (!stagedBase64) return toast('Drop a screenshot first', true);
+            showLoading(true);
+            try {
+                const imagePart = { inlineData: { data: stagedBase64, mimeType: stagedMime } };
+                const notes = $('manualNotes').value.trim();
+                const data = notes
+                    ? await parseWithNotes(imagePart, notes)
+                    : await parseScreenshot(imagePart);
+                populateResults(data, stagedFull);
+                clearStaged();
+                $('manualNotes').value = '';
+            } catch (err) {
+                console.error(err);
+                toast('Error parsing — check API key', true);
+            }
+            showLoading(false);
+        };
+
+        // GEMINI API
+        async function parseScreenshot(imagePart) {
+            const genAI = new GoogleGenerativeAI(localStorage.getItem('bbo_gemini_key'));
+            const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+
+            const prompt = `You are a CRM assistant for "Bad Bitches Only" (BBO), an urban lifestyle brand run by King Maker.
+
+Analyze this screenshot of an Instagram DM or social media interaction. Extract:
+{
+    "handle": "the username without @",
+    "category": "Lead, Content Day, Creator, Partner, Hoodie, Event, or Personal",
+    "urgency": "hot (ready to buy/book), warm (interested), or cold (just browsing)",
+    "context": "1-2 sentence summary of what they want"
+}
+
+Return ONLY valid JSON. No markdown, no code blocks.`;
+
+            const result = await model.generateContent([prompt, imagePart]);
+            return cleanJSON(result.response.text());
+        }
+
+        async function parseWithNotes(imagePart, notes) {
+            const genAI = new GoogleGenerativeAI(localStorage.getItem('bbo_gemini_key'));
+            const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+
+            const prompt = `You are a CRM assistant for "Bad Bitches Only" (BBO), an urban lifestyle brand run by King Maker.
+
+I'm giving you TWO inputs about the SAME contact:
+1. A SCREENSHOT of a DM or social media interaction
+2. MY NOTES with extra context about this person
+
+Combine both to extract the most complete picture:
+{
+    "handle": "the username without @ (prefer what you see in the screenshot)",
+    "category": "Lead, Content Day, Creator, Partner, Hoodie, Event, or Personal",
+    "urgency": "hot (ready to buy/book), warm (interested), or cold (just browsing)",
+    "context": "Combined 2-3 sentence summary using BOTH the screenshot AND my notes"
+}
+
+MY NOTES: "${notes}"
+
+Return ONLY valid JSON. No markdown, no code blocks.`;
+
+            const result = await model.generateContent([prompt, imagePart]);
+            return cleanJSON(result.response.text());
+        }
+
+        function cleanJSON(text) {
+            try {
+                return JSON.parse(text.replace(/```json/g, '').replace(/```/g, '').trim());
+            } catch {
+                return { handle: '', category: 'Personal', urgency: 'warm', context: text };
+            }
+        }
+
+        // RESULTS FORM
+        function populateResults(data, screenshot = null) {
+            $('resultHandle').value = (data.handle || '').replace('@', '');
+            $('resultCategory').value = data.category || 'Lead';
+            $('resultContext').value = data.context || '';
+
+            const urg = data.urgency || 'warm';
+            const radio = document.querySelector(`input[name="urgency"][value="${urg}"]`);
+            if (radio) radio.checked = true;
+
+            if (screenshot) {
+                $('modalPreviewWrap').classList.remove('hidden');
+                $('modalPreview').src = screenshot;
+            } else {
+                $('modalPreviewWrap').classList.add('hidden');
+            }
+
+            $('resultsModal').classList.remove('hidden');
+        }
+
+        $('closeModal').addEventListener('click', () => {
+            $('resultsModal').classList.add('hidden');
+            stagedFull = null;
+        });
+
+        // SAVE
+        $('saveBtn').addEventListener('click', async () => {
+            const handle = $('resultHandle').value.trim();
+            if (!handle) return toast('Enter a handle', true);
+
+            const urgencyEl = document.querySelector('input[name="urgency"]:checked');
+            const lead = {
+                handle: '@' + handle.replace('@', ''),
+                category: $('resultCategory').value,
+                urgency: urgencyEl ? urgencyEl.value : 'warm',
+                context: $('resultContext').value.trim(),
+                screenshot: stagedFull || null,
+                source: 'screenshot',
+                created_at: new Date().toISOString()
+            };
+
+            await dbAdd(lead);
+
+            // Webhook
+            const webhookUrl = localStorage.getItem('bbo_webhook');
+            if (webhookUrl) {
+                try {
+                    await fetch(webhookUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            handle: lead.handle, category: lead.category,
+                            urgency: lead.urgency, context: lead.context,
+                            timestamp: lead.created_at
+                        })
+                    });
+                } catch (err) { console.warn('Webhook failed:', err); }
+            }
+
+            toast('Saved to The Roster! 🔥');
+            $('resultsModal').classList.add('hidden');
+            stagedFull = null;
+            await renderLeads();
+        });
+
+        // COPY
+        $('copyBtn').addEventListener('click', () => {
+            const text = `Handle: @${$('resultHandle').value}\nCategory: ${$('resultCategory').value}\nUrgency: ${document.querySelector('input[name="urgency"]:checked')?.value || 'warm'}\nContext: ${$('resultContext').value}`;
+            navigator.clipboard.writeText(text);
+            $('copyBtn').textContent = '✅ COPIED';
+            setTimeout(() => $('copyBtn').textContent = '📋 COPY', 1500);
+        });
+
+        // RENDER LEADS
+        async function renderLeads() {
+            const all = await dbGetAll();
+            $('leadCount').textContent = all.length;
+
+            const search = ($('searchInput')?.value || '').toLowerCase();
+            let filtered = all.filter(l => {
+                if (search) {
+                    const s = (l.handle + ' ' + l.context + ' ' + l.category).toLowerCase();
+                    if (!s.includes(search)) return false;
+                }
+                if (currentFilter === 'all') return true;
+                if (['hot', 'warm', 'cold'].includes(currentFilter)) return l.urgency === currentFilter;
+                return l.category === currentFilter;
+            });
+
+            filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+            const grid = $('leadsGrid');
+            if (filtered.length === 0) {
+                grid.innerHTML = `<div class="text-center py-16 text-gray-600"><p class="text-3xl mb-3">📋</p><p class="font-bold text-gray-500">${all.length === 0 ? 'No leads yet' : 'No matches'}</p><p class="text-xs mt-1">${all.length === 0 ? 'Capture your first lead' : 'Try a different filter'}</p></div>`;
+                return;
+            }
+
+            grid.innerHTML = filtered.map(l => {
+                const d = new Date(l.created_at);
+                const date = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+                const esc = t => { const d = document.createElement('div'); d.textContent = t || ''; return d.innerHTML; };
+
+                return `<div class="card-in bg-gray-900/60 border border-gray-800 rounded-xl p-4 space-y-2">
+                    <div class="flex justify-between items-start">
+                        <span class="text-bbo font-bold text-sm">${esc(l.handle)}</span>
+                        <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${l.urgency === 'hot' ? 'bg-bbo/15 text-bbo' : l.urgency === 'warm' ? 'bg-yellow-500/15 text-yellow-400' : 'bg-blue-500/15 text-blue-400'}">${l.urgency}</span>
+                    </div>
+                    <span class="inline-block text-[10px] font-semibold px-2 py-0.5 rounded bg-gray-800 text-gray-400">${esc(l.category)}</span>
+                    <p class="text-xs text-gray-400 leading-relaxed">${esc(l.context) || 'No context'}</p>
+                    <div class="flex justify-between items-center pt-1 border-t border-gray-800/50">
+                        <span class="text-[10px] text-gray-600">${date} · ${time}</span>
+                        <button onclick="window._deleteLead(${l.id})" class="text-[10px] text-red-500/60 hover:text-red-400 font-semibold transition">DELETE</button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        window._deleteLead = async function (id) {
+            if (!confirm('Delete this lead?')) return;
+            await dbDelete(id);
+            toast('Lead deleted');
+            await renderLeads();
+        };
+
+        // FILTERS
+        document.querySelectorAll('.filter-chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                document.querySelectorAll('.filter-chip').forEach(c => {
+                    c.classList.remove('active', 'bg-bbo', 'border-bbo', 'text-white');
+                    c.classList.add('border-gray-800', 'text-gray-500');
+                });
+                chip.classList.add('active', 'bg-bbo', 'border-bbo', 'text-white');
+                chip.classList.remove('border-gray-800', 'text-gray-500');
+                currentFilter = chip.dataset.filter;
+                renderLeads();
+            });
+        });
+
+        const firstChip = document.querySelector('.filter-chip.active');
+        if (firstChip) {
+            firstChip.classList.add('bg-bbo', 'border-bbo', 'text-white');
+            firstChip.classList.remove('border-gray-800', 'text-gray-500');
+        }
+
+        $('searchInput')?.addEventListener('input', () => renderLeads());
+
+        // EXPORT CSV
+        window.exportCSV = async function () {
+            const leads = await dbGetAll();
+            if (!leads.length) return toast('No leads to export', true);
+
+            const headers = ['Handle', 'Category', 'Urgency', 'Context', 'Date'];
+            const rows = leads.map(l => [
+                l.handle,
+                l.category,
+                l.urgency,
+                `"${(l.context || '').replace(/"/g, '""')}"`,
+                new Date(l.created_at).toLocaleString()
+            ]);
+            const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = `bbo_rolodex_${new Date().toISOString().slice(0, 10)}.csv`;
+            a.click(); URL.revokeObjectURL(url);
+            toast('CSV exported 📥');
+        };
+
+        // HELPERS
+        function showLoading(show) { $('loadingState').classList.toggle('hidden', !show); }
+
+        function toast(msg, isError = false) {
+            $('toastIcon').textContent = isError ? '❌' : '✅';
+            $('toastMsg').textContent = msg;
+            $('toast').classList.add('show');
+            setTimeout(() => $('toast').classList.remove('show'), 2500);
+        }
+    </script>
+</body>
+
+</html>
