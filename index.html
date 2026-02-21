@@ -24,13 +24,6 @@
             }
         }
     </script>
-    <script type="importmap">
-        {
-            "imports": {
-                "@google/generative-ai": "https://esm.run/@google/generative-ai"
-            }
-        }
-    </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
         rel="stylesheet">
     <style>
@@ -177,8 +170,6 @@
 
         <!-- TAB: CAPTURE -->
         <div id="captureTab" class="p-5 space-y-4">
-
-            <!-- Screenshot Drop Zone -->
             <label id="dropZone"
                 class="group relative flex flex-col items-center justify-center h-52 rounded-2xl border-2 border-dashed border-gray-800 bg-gray-900/40 hover:bg-gray-800/40 transition-all cursor-pointer overflow-hidden">
                 <input type="file" id="imageInput" accept="image/*" class="hidden">
@@ -193,13 +184,11 @@
                     </div>
                     <div class="text-center">
                         <span class="text-lg font-bold text-gray-300 block">SCAN DM / SCREENSHOT</span>
-                        <span class="text-[11px] text-gray-600 font-medium">Drag, tap, or use camera — AI extracts the
-                            intel</span>
+                        <span class="text-[11px] text-gray-600 font-medium">Tap to select from photos or camera</span>
                     </div>
                 </div>
             </label>
 
-            <!-- Staged Screenshot (shown after selecting image) -->
             <div id="stagedArea" class="hidden staged-area animate-slide-up">
                 <img id="stagedImg" class="staged-img" alt="Screenshot preview">
                 <div class="staged-overlay">
@@ -210,16 +199,14 @@
                 </div>
             </div>
 
-            <!-- Notes (always visible — type extra context) -->
             <div>
                 <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">📝 YOUR NOTES
                     <span class="text-gray-700">(optional)</span></label>
                 <textarea id="manualNotes" rows="3"
                     class="w-full bg-gray-900/60 border border-gray-800 rounded-xl p-3 text-white text-sm focus:outline-none focus:border-bbo transition leading-relaxed placeholder-gray-600"
-                    placeholder="Type anything you know about this person... &#10;e.g. &quot;Met at the event, wants content day, premium package&quot;"></textarea>
+                    placeholder="Type anything you know about this person..."></textarea>
             </div>
 
-            <!-- Parse Button -->
             <button id="parseBtn"
                 class="w-full py-3.5 rounded-xl bg-gradient-to-r from-bbo to-bbo-light hover:opacity-90 text-white font-bold text-sm transition shadow-lg shadow-pink-500/20 flex justify-center items-center gap-2 active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed"
                 disabled onclick="submitCapture()">
@@ -227,7 +214,6 @@
             </button>
             <p id="parseHint" class="text-center text-[10px] text-gray-600">Drop a screenshot above to enable parsing
             </p>
-
         </div>
 
         <!-- TAB: LEADS -->
@@ -266,7 +252,6 @@
             </div>
             <div id="leadsGrid" class="space-y-3"></div>
         </div>
-
     </main>
 
     <!-- BOTTOM NAV -->
@@ -296,7 +281,7 @@
         </button>
     </nav>
 
-    <!-- LOADING OVERLAY -->
+    <!-- LOADING -->
     <div id="loadingState"
         class="hidden fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center backdrop-blur-sm">
         <div class="w-14 h-14 border-[3px] border-bbo border-t-transparent rounded-full animate-spin mb-4"></div>
@@ -308,26 +293,19 @@
         class="hidden fixed inset-0 z-40 bg-black/95 flex items-end sm:items-center justify-center backdrop-blur-sm">
         <div
             class="w-full max-w-md bg-[#0D0D0D] border border-gray-800 rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden animate-slide-up max-h-[90vh] overflow-y-auto no-scrollbar">
-
             <div
                 class="p-4 border-b border-gray-800/50 flex justify-between items-center sticky top-0 bg-[#0D0D0D] z-10">
-                <h2 class="text-base font-bold flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                    EXTRACTED DATA
-                </h2>
-                <button id="closeModal" class="p-1 text-gray-500 hover:text-white transition">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <h2 class="text-base font-bold flex items-center gap-2"><span
+                        class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>EXTRACTED DATA</h2>
+                <button id="closeModal" class="p-1 text-gray-500 hover:text-white transition"><svg width="20"
+                        height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="18" y1="6" x2="6" y2="18" />
                         <line x1="6" y1="6" x2="18" y2="18" />
-                    </svg>
-                </button>
+                    </svg></button>
             </div>
-
             <div class="p-5 space-y-4">
-                <div id="modalPreviewWrap" class="hidden">
-                    <img id="modalPreview" class="w-full h-40 object-cover rounded-xl border border-gray-800">
-                </div>
-
+                <div id="modalPreviewWrap" class="hidden"><img id="modalPreview"
+                        class="w-full h-40 object-cover rounded-xl border border-gray-800"></div>
                 <div>
                     <label
                         class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Handle</label>
@@ -338,47 +316,44 @@
                             placeholder="username">
                     </div>
                 </div>
-
                 <div>
                     <label
                         class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Category</label>
                     <select id="resultCategory"
                         class="w-full bg-gray-900 border border-gray-800 rounded-xl p-2.5 text-white text-sm focus:outline-none focus:border-bbo transition appearance-none">
-                        <option value="Lead">💰 Lead (Potential Customer)</option>
+                        <option value="Lead">💰 Lead</option>
                         <option value="Content Day">📸 Content Day</option>
-                        <option value="Creator">🎬 Creator / Talent</option>
-                        <option value="Partner">🤝 Brand Partner</option>
+                        <option value="Creator">🎬 Creator</option>
+                        <option value="Partner">🤝 Partner</option>
                         <option value="Hoodie">👕 Hoodie / Merch</option>
                         <option value="Event">🎤 Event</option>
-                        <option value="Personal">💜 Personal / Vibe</option>
+                        <option value="Personal">💜 Personal</option>
                     </select>
                 </div>
-
                 <div>
                     <label
                         class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Urgency</label>
                     <div class="grid grid-cols-3 gap-2">
-                        <label class="cursor-pointer">
-                            <input type="radio" name="urgency" value="hot" class="hidden peer">
+                        <label class="cursor-pointer"><input type="radio" name="urgency" value="hot"
+                                class="hidden peer">
                             <div
                                 class="text-center py-2 rounded-xl border border-gray-800 text-xs font-bold text-gray-500 peer-checked:border-bbo peer-checked:bg-bbo/10 peer-checked:text-bbo transition">
                                 🔥 HOT</div>
                         </label>
-                        <label class="cursor-pointer">
-                            <input type="radio" name="urgency" value="warm" class="hidden peer" checked>
+                        <label class="cursor-pointer"><input type="radio" name="urgency" value="warm"
+                                class="hidden peer" checked>
                             <div
                                 class="text-center py-2 rounded-xl border border-gray-800 text-xs font-bold text-gray-500 peer-checked:border-yellow-500 peer-checked:bg-yellow-500/10 peer-checked:text-yellow-400 transition">
                                 🟡 WARM</div>
                         </label>
-                        <label class="cursor-pointer">
-                            <input type="radio" name="urgency" value="cold" class="hidden peer">
+                        <label class="cursor-pointer"><input type="radio" name="urgency" value="cold"
+                                class="hidden peer">
                             <div
                                 class="text-center py-2 rounded-xl border border-gray-800 text-xs font-bold text-gray-500 peer-checked:border-blue-500 peer-checked:bg-blue-500/10 peer-checked:text-blue-400 transition">
                                 🔵 COLD</div>
                         </label>
                     </div>
                 </div>
-
                 <div>
                     <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Context /
                         Notes</label>
@@ -387,21 +362,18 @@
                         placeholder="What did they want?"></textarea>
                 </div>
             </div>
-
             <div class="p-4 border-t border-gray-800/50 flex gap-3 sticky bottom-0 bg-[#0D0D0D]">
                 <button id="copyBtn"
-                    class="flex-1 py-3 rounded-xl bg-gray-900 hover:bg-gray-800 text-white font-bold text-sm transition flex justify-center items-center gap-2 border border-gray-800">
-                    📋 COPY
-                </button>
+                    class="flex-1 py-3 rounded-xl bg-gray-900 hover:bg-gray-800 text-white font-bold text-sm transition flex justify-center items-center gap-2 border border-gray-800">📋
+                    COPY</button>
                 <button id="saveBtn"
-                    class="flex-[2] py-3 rounded-xl bg-gradient-to-r from-bbo to-bbo-light hover:opacity-90 text-white font-bold text-sm transition shadow-lg shadow-pink-500/20 flex justify-center items-center gap-2">
-                    💾 SAVE TO ROSTER
-                </button>
+                    class="flex-[2] py-3 rounded-xl bg-gradient-to-r from-bbo to-bbo-light hover:opacity-90 text-white font-bold text-sm transition shadow-lg shadow-pink-500/20 flex justify-center items-center gap-2">💾
+                    SAVE TO ROSTER</button>
             </div>
         </div>
     </div>
 
-    <!-- SETTINGS MODAL -->
+    <!-- SETTINGS -->
     <div id="settingsModal"
         class="hidden fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-5 backdrop-blur-sm">
         <div class="w-full max-w-sm bg-[#0D0D0D] rounded-2xl p-6 border border-gray-800 animate-slide-up">
@@ -422,8 +394,6 @@
                     <input type="text" id="webhookInput"
                         class="w-full bg-black border border-gray-800 rounded-xl p-3 text-white text-sm focus:outline-none focus:border-bbo transition"
                         placeholder="https://hook.us1.make.com/...">
-                    <p class="text-[10px] text-gray-600 mt-1">Sends data to Google Sheets / Airtable via Make/Zapier.
-                    </p>
                 </div>
                 <button id="saveSettingsBtn"
                     class="w-full py-3 bg-white text-black font-bold rounded-xl hover:bg-gray-200 transition text-sm">SAVE
@@ -434,10 +404,8 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT -->
-    <script type="module">
-        import { GoogleGenerativeAI } from "@google/generative-ai";
-
+    <!-- JAVASCRIPT — NO SDK, DIRECT REST API FOR MAX COMPATIBILITY -->
+    <script>
         // STATE
         const DB_NAME = 'bbo_rolodex';
         const DB_VERSION = 1;
@@ -448,15 +416,14 @@
         let stagedMime = null;
         let stagedFull = null;
 
-        // DOM
         const $ = id => document.getElementById(id);
-        const imageInput = $('imageInput');
-        const dropZone = $('dropZone');
 
         // INIT
-        await initDB();
-        await renderLeads();
-        loadSettings();
+        (async () => {
+            await initDB();
+            await renderLeads();
+            loadSettings();
+        })();
 
         // INDEXEDDB
         function initDB() {
@@ -536,7 +503,8 @@
             }
         };
 
-        // DRAG & DROP
+        // DRAG & DROP (for desktop)
+        const dropZone = $('dropZone');
         ['dragenter', 'dragover'].forEach(ev => {
             dropZone.addEventListener(ev, e => { e.preventDefault(); dropZone.classList.add('drag-glow'); });
         });
@@ -549,21 +517,22 @@
         });
 
         // FILE INPUT
-        imageInput.addEventListener('change', e => {
+        $('imageInput').addEventListener('change', e => {
             const f = e.target.files[0];
             if (f) stageScreenshot(f);
-            imageInput.value = '';
+            $('imageInput').value = '';
         });
 
-        // COMPRESS IMAGE (iPhone screenshots are huge, Gemini has limits)
-        function compressImage(file, maxSize = 1024) {
-            return new Promise((resolve) => {
-                const img = new Image();
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        let w = img.width, h = img.height;
+        // COMPRESS IMAGE (iPhone screenshots are huge)
+        function compressImage(file, maxSize) {
+            maxSize = maxSize || 1024;
+            return new Promise(function (resolve) {
+                var img = new Image();
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    img.onload = function () {
+                        var canvas = document.createElement('canvas');
+                        var w = img.width, h = img.height;
                         if (w > maxSize || h > maxSize) {
                             if (w > h) { h = Math.round(h * maxSize / w); w = maxSize; }
                             else { w = Math.round(w * maxSize / h); h = maxSize; }
@@ -571,8 +540,7 @@
                         canvas.width = w;
                         canvas.height = h;
                         canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                        const compressed = canvas.toDataURL('image/jpeg', 0.8);
-                        resolve(compressed);
+                        resolve(canvas.toDataURL('image/jpeg', 0.8));
                     };
                     img.src = e.target.result;
                 };
@@ -580,142 +548,118 @@
             });
         }
 
-        // STAGE SCREENSHOT (show preview, enable parse button)
+        // STAGE SCREENSHOT
         async function stageScreenshot(file) {
-            const compressed = await compressImage(file);
+            var compressed = await compressImage(file);
             stagedFull = compressed;
             stagedBase64 = compressed.split(',')[1];
             stagedMime = 'image/jpeg';
-
             $('stagedImg').src = compressed;
             $('stagedArea').classList.remove('hidden');
             $('dropZone').classList.add('hidden');
             $('parseBtn').disabled = false;
-            $('parseHint').textContent = 'Screenshot ready — add notes below if you want, then hit parse';
+            $('parseHint').textContent = 'Screenshot ready — add notes if you want, then hit parse';
         }
 
         window.clearStaged = function () {
-            stagedBase64 = null;
-            stagedMime = null;
-            stagedFull = null;
+            stagedBase64 = null; stagedMime = null; stagedFull = null;
             $('stagedArea').classList.add('hidden');
             $('dropZone').classList.remove('hidden');
             $('parseBtn').disabled = true;
             $('parseHint').textContent = 'Drop a screenshot above to enable parsing';
         };
 
-        // SUBMIT — parse screenshot + optional typed notes
+        // SUBMIT
         window.submitCapture = async function () {
             if (!stagedBase64) return toast('Drop a screenshot first', true);
             showLoading(true);
             try {
-                const imagePart = { inlineData: { data: stagedBase64, mimeType: stagedMime } };
-                const notes = $('manualNotes').value.trim();
-                const data = notes
-                    ? await parseWithNotes(imagePart, notes)
-                    : await parseScreenshot(imagePart);
+                var notes = $('manualNotes').value.trim();
+                var prompt = notes ? buildPromptWithNotes(notes) : buildPrompt();
+                var data = await callGemini(prompt, stagedBase64, stagedMime);
                 populateResults(data, stagedFull);
                 clearStaged();
                 $('manualNotes').value = '';
             } catch (err) {
                 console.error('Parse error:', err);
-                let msg = err.message || String(err);
-                if (msg.includes('API_KEY_INVALID') || msg.includes('401')) msg = 'Invalid API key — check Settings';
-                else if (msg.includes('quota') || msg.includes('429')) msg = 'API quota exceeded — wait a minute';
-                else if (msg.includes('too large') || msg.includes('413')) msg = 'Image too large — try a smaller screenshot';
-                else msg = msg.slice(0, 100);
+                var msg = err.message || String(err);
+                if (msg.indexOf('API key') > -1 || msg.indexOf('401') > -1 || msg.indexOf('403') > -1) msg = 'Invalid API key — tap ⚙️ to fix';
+                else if (msg.indexOf('quota') > -1 || msg.indexOf('429') > -1) msg = 'API limit hit — wait a minute';
+                else msg = msg.substring(0, 120);
                 toast('❌ ' + msg, true);
             }
             showLoading(false);
         };
 
-        // GEMINI API
-        async function parseScreenshot(imagePart) {
-            const genAI = new GoogleGenerativeAI(localStorage.getItem('bbo_gemini_key'));
-            const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+        // ===== GEMINI REST API (no SDK needed!) =====
+        async function callGemini(promptText, imageBase64, imageMime) {
+            var apiKey = localStorage.getItem('bbo_gemini_key');
+            if (!apiKey) throw new Error('No API key — tap ⚙️ Settings');
 
-            const prompt = `You are a CRM assistant for "Bad Bitches Only" (BBO), an urban lifestyle brand run by King Maker.
+            var url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + apiKey;
 
-Analyze this screenshot of an Instagram DM or social media interaction. Extract:
-{
-    "handle": "the username without @",
-    "category": "Lead, Content Day, Creator, Partner, Hoodie, Event, or Personal",
-    "urgency": "hot (ready to buy/book), warm (interested), or cold (just browsing)",
-    "context": "1-2 sentence summary of what they want"
-}
+            var body = {
+                contents: [{
+                    parts: [
+                        { text: promptText },
+                        { inline_data: { mime_type: imageMime, data: imageBase64 } }
+                    ]
+                }]
+            };
 
-Return ONLY valid JSON. No markdown, no code blocks.`;
+            var resp = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
 
-            const result = await model.generateContent([prompt, imagePart]);
-            return cleanJSON(result.response.text());
+            if (!resp.ok) {
+                var errorBody = await resp.text();
+                throw new Error('API error ' + resp.status + ': ' + errorBody.substring(0, 200));
+            }
+
+            var json = await resp.json();
+            var text = json.candidates[0].content.parts[0].text;
+            return cleanJSON(text);
         }
 
-        async function parseWithNotes(imagePart, notes) {
-            const genAI = new GoogleGenerativeAI(localStorage.getItem('bbo_gemini_key'));
-            const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+        function buildPrompt() {
+            return 'You are a CRM assistant for "Bad Bitches Only" (BBO), an urban lifestyle brand run by King Maker.\n\nAnalyze this screenshot of an Instagram DM or social media interaction. Extract:\n{\n    "handle": "the username without @",\n    "category": "Lead, Content Day, Creator, Partner, Hoodie, Event, or Personal",\n    "urgency": "hot (ready to buy/book), warm (interested), or cold (just browsing)",\n    "context": "1-2 sentence summary of what they want"\n}\n\nReturn ONLY valid JSON. No markdown, no code blocks.';
+        }
 
-            const prompt = `You are a CRM assistant for "Bad Bitches Only" (BBO), an urban lifestyle brand run by King Maker.
-
-I'm giving you TWO inputs about the SAME contact:
-1. A SCREENSHOT of a DM or social media interaction
-2. MY NOTES with extra context about this person
-
-Combine both to extract the most complete picture:
-{
-    "handle": "the username without @ (prefer what you see in the screenshot)",
-    "category": "Lead, Content Day, Creator, Partner, Hoodie, Event, or Personal",
-    "urgency": "hot (ready to buy/book), warm (interested), or cold (just browsing)",
-    "context": "Combined 2-3 sentence summary using BOTH the screenshot AND my notes"
-}
-
-MY NOTES: "${notes}"
-
-Return ONLY valid JSON. No markdown, no code blocks.`;
-
-            const result = await model.generateContent([prompt, imagePart]);
-            return cleanJSON(result.response.text());
+        function buildPromptWithNotes(notes) {
+            return 'You are a CRM assistant for "Bad Bitches Only" (BBO), an urban lifestyle brand run by King Maker.\n\nI\'m giving you TWO inputs about the SAME contact:\n1. A SCREENSHOT of a DM or social media interaction\n2. MY NOTES with extra context about this person\n\nCombine both to extract the most complete picture:\n{\n    "handle": "the username without @ (prefer what you see in the screenshot)",\n    "category": "Lead, Content Day, Creator, Partner, Hoodie, Event, or Personal",\n    "urgency": "hot (ready to buy/book), warm (interested), or cold (just browsing)",\n    "context": "Combined 2-3 sentence summary using BOTH the screenshot AND my notes"\n}\n\nMY NOTES: "' + notes + '"\n\nReturn ONLY valid JSON. No markdown, no code blocks.';
         }
 
         function cleanJSON(text) {
             try {
                 return JSON.parse(text.replace(/```json/g, '').replace(/```/g, '').trim());
-            } catch {
+            } catch (e) {
                 return { handle: '', category: 'Personal', urgency: 'warm', context: text };
             }
         }
 
-        // RESULTS FORM
-        function populateResults(data, screenshot = null) {
+        // RESULTS
+        function populateResults(data, screenshot) {
             $('resultHandle').value = (data.handle || '').replace('@', '');
             $('resultCategory').value = data.category || 'Lead';
             $('resultContext').value = data.context || '';
-
-            const urg = data.urgency || 'warm';
-            const radio = document.querySelector(`input[name="urgency"][value="${urg}"]`);
+            var urg = data.urgency || 'warm';
+            var radio = document.querySelector('input[name="urgency"][value="' + urg + '"]');
             if (radio) radio.checked = true;
-
-            if (screenshot) {
-                $('modalPreviewWrap').classList.remove('hidden');
-                $('modalPreview').src = screenshot;
-            } else {
-                $('modalPreviewWrap').classList.add('hidden');
-            }
-
+            if (screenshot) { $('modalPreviewWrap').classList.remove('hidden'); $('modalPreview').src = screenshot; }
+            else { $('modalPreviewWrap').classList.add('hidden'); }
             $('resultsModal').classList.remove('hidden');
         }
 
-        $('closeModal').addEventListener('click', () => {
-            $('resultsModal').classList.add('hidden');
-            stagedFull = null;
-        });
+        $('closeModal').addEventListener('click', function () { $('resultsModal').classList.add('hidden'); stagedFull = null; });
 
         // SAVE
-        $('saveBtn').addEventListener('click', async () => {
-            const handle = $('resultHandle').value.trim();
+        $('saveBtn').addEventListener('click', async function () {
+            var handle = $('resultHandle').value.trim();
             if (!handle) return toast('Enter a handle', true);
-
-            const urgencyEl = document.querySelector('input[name="urgency"]:checked');
-            const lead = {
+            var urgencyEl = document.querySelector('input[name="urgency"]:checked');
+            var lead = {
                 handle: '@' + handle.replace('@', ''),
                 category: $('resultCategory').value,
                 urgency: urgencyEl ? urgencyEl.value : 'warm',
@@ -724,25 +668,16 @@ Return ONLY valid JSON. No markdown, no code blocks.`;
                 source: 'screenshot',
                 created_at: new Date().toISOString()
             };
-
             await dbAdd(lead);
-
-            // Webhook
-            const webhookUrl = localStorage.getItem('bbo_webhook');
+            var webhookUrl = localStorage.getItem('bbo_webhook');
             if (webhookUrl) {
                 try {
                     await fetch(webhookUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            handle: lead.handle, category: lead.category,
-                            urgency: lead.urgency, context: lead.context,
-                            timestamp: lead.created_at
-                        })
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ handle: lead.handle, category: lead.category, urgency: lead.urgency, context: lead.context, timestamp: lead.created_at })
                     });
-                } catch (err) { console.warn('Webhook failed:', err); }
+                } catch (e) { console.warn('Webhook failed:', e); }
             }
-
             toast('Saved to The Roster! 🔥');
             $('resultsModal').classList.add('hidden');
             stagedFull = null;
@@ -750,55 +685,42 @@ Return ONLY valid JSON. No markdown, no code blocks.`;
         });
 
         // COPY
-        $('copyBtn').addEventListener('click', () => {
-            const text = `Handle: @${$('resultHandle').value}\nCategory: ${$('resultCategory').value}\nUrgency: ${document.querySelector('input[name="urgency"]:checked')?.value || 'warm'}\nContext: ${$('resultContext').value}`;
+        $('copyBtn').addEventListener('click', function () {
+            var text = 'Handle: @' + $('resultHandle').value + '\nCategory: ' + $('resultCategory').value + '\nUrgency: ' + (document.querySelector('input[name="urgency"]:checked') || {}).value + '\nContext: ' + $('resultContext').value;
             navigator.clipboard.writeText(text);
             $('copyBtn').textContent = '✅ COPIED';
-            setTimeout(() => $('copyBtn').textContent = '📋 COPY', 1500);
+            setTimeout(function () { $('copyBtn').textContent = '📋 COPY'; }, 1500);
         });
 
         // RENDER LEADS
         async function renderLeads() {
-            const all = await dbGetAll();
+            var all = await dbGetAll();
             $('leadCount').textContent = all.length;
-
-            const search = ($('searchInput')?.value || '').toLowerCase();
-            let filtered = all.filter(l => {
-                if (search) {
-                    const s = (l.handle + ' ' + l.context + ' ' + l.category).toLowerCase();
-                    if (!s.includes(search)) return false;
-                }
+            var search = ($('searchInput') ? $('searchInput').value : '').toLowerCase();
+            var filtered = all.filter(function (l) {
+                if (search) { var s = (l.handle + ' ' + l.context + ' ' + l.category).toLowerCase(); if (s.indexOf(search) === -1) return false; }
                 if (currentFilter === 'all') return true;
-                if (['hot', 'warm', 'cold'].includes(currentFilter)) return l.urgency === currentFilter;
+                if (currentFilter === 'hot' || currentFilter === 'warm' || currentFilter === 'cold') return l.urgency === currentFilter;
                 return l.category === currentFilter;
             });
-
-            filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-            const grid = $('leadsGrid');
+            filtered.sort(function (a, b) { return new Date(b.created_at) - new Date(a.created_at); });
+            var grid = $('leadsGrid');
             if (filtered.length === 0) {
-                grid.innerHTML = `<div class="text-center py-16 text-gray-600"><p class="text-3xl mb-3">📋</p><p class="font-bold text-gray-500">${all.length === 0 ? 'No leads yet' : 'No matches'}</p><p class="text-xs mt-1">${all.length === 0 ? 'Capture your first lead' : 'Try a different filter'}</p></div>`;
+                grid.innerHTML = '<div class="text-center py-16 text-gray-600"><p class="text-3xl mb-3">📋</p><p class="font-bold text-gray-500">' + (all.length === 0 ? 'No leads yet' : 'No matches') + '</p></div>';
                 return;
             }
-
-            grid.innerHTML = filtered.map(l => {
-                const d = new Date(l.created_at);
-                const date = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-                const esc = t => { const d = document.createElement('div'); d.textContent = t || ''; return d.innerHTML; };
-
-                return `<div class="card-in bg-gray-900/60 border border-gray-800 rounded-xl p-4 space-y-2">
-                    <div class="flex justify-between items-start">
-                        <span class="text-bbo font-bold text-sm">${esc(l.handle)}</span>
-                        <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${l.urgency === 'hot' ? 'bg-bbo/15 text-bbo' : l.urgency === 'warm' ? 'bg-yellow-500/15 text-yellow-400' : 'bg-blue-500/15 text-blue-400'}">${l.urgency}</span>
-                    </div>
-                    <span class="inline-block text-[10px] font-semibold px-2 py-0.5 rounded bg-gray-800 text-gray-400">${esc(l.category)}</span>
-                    <p class="text-xs text-gray-400 leading-relaxed">${esc(l.context) || 'No context'}</p>
-                    <div class="flex justify-between items-center pt-1 border-t border-gray-800/50">
-                        <span class="text-[10px] text-gray-600">${date} · ${time}</span>
-                        <button onclick="window._deleteLead(${l.id})" class="text-[10px] text-red-500/60 hover:text-red-400 font-semibold transition">DELETE</button>
-                    </div>
-                </div>`;
+            grid.innerHTML = filtered.map(function (l) {
+                var d = new Date(l.created_at);
+                var date = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                var time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+                function esc(t) { var el = document.createElement('div'); el.textContent = t || ''; return el.innerHTML; }
+                var urgClass = l.urgency === 'hot' ? 'bg-bbo/15 text-bbo' : l.urgency === 'warm' ? 'bg-yellow-500/15 text-yellow-400' : 'bg-blue-500/15 text-blue-400';
+                return '<div class="card-in bg-gray-900/60 border border-gray-800 rounded-xl p-4 space-y-2">' +
+                    '<div class="flex justify-between items-start"><span class="text-bbo font-bold text-sm">' + esc(l.handle) + '</span><span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ' + urgClass + '">' + l.urgency + '</span></div>' +
+                    '<span class="inline-block text-[10px] font-semibold px-2 py-0.5 rounded bg-gray-800 text-gray-400">' + esc(l.category) + '</span>' +
+                    '<p class="text-xs text-gray-400 leading-relaxed">' + (esc(l.context) || 'No context') + '</p>' +
+                    '<div class="flex justify-between items-center pt-1 border-t border-gray-800/50"><span class="text-[10px] text-gray-600">' + date + ' · ' + time + '</span>' +
+                    '<button onclick="window._deleteLead(' + l.id + ')" class="text-[10px] text-red-500/60 hover:text-red-400 font-semibold transition">DELETE</button></div></div>';
             }).join('');
         }
 
@@ -810,9 +732,9 @@ Return ONLY valid JSON. No markdown, no code blocks.`;
         };
 
         // FILTERS
-        document.querySelectorAll('.filter-chip').forEach(chip => {
-            chip.addEventListener('click', () => {
-                document.querySelectorAll('.filter-chip').forEach(c => {
+        document.querySelectorAll('.filter-chip').forEach(function (chip) {
+            chip.addEventListener('click', function () {
+                document.querySelectorAll('.filter-chip').forEach(function (c) {
                     c.classList.remove('active', 'bg-bbo', 'border-bbo', 'text-white');
                     c.classList.add('border-gray-800', 'text-gray-500');
                 });
@@ -822,45 +744,32 @@ Return ONLY valid JSON. No markdown, no code blocks.`;
                 renderLeads();
             });
         });
+        var firstChip = document.querySelector('.filter-chip.active');
+        if (firstChip) { firstChip.classList.add('bg-bbo', 'border-bbo', 'text-white'); firstChip.classList.remove('border-gray-800', 'text-gray-500'); }
+        if ($('searchInput')) $('searchInput').addEventListener('input', function () { renderLeads(); });
 
-        const firstChip = document.querySelector('.filter-chip.active');
-        if (firstChip) {
-            firstChip.classList.add('bg-bbo', 'border-bbo', 'text-white');
-            firstChip.classList.remove('border-gray-800', 'text-gray-500');
-        }
-
-        $('searchInput')?.addEventListener('input', () => renderLeads());
-
-        // EXPORT CSV
+        // EXPORT
         window.exportCSV = async function () {
-            const leads = await dbGetAll();
+            var leads = await dbGetAll();
             if (!leads.length) return toast('No leads to export', true);
-
-            const headers = ['Handle', 'Category', 'Urgency', 'Context', 'Date'];
-            const rows = leads.map(l => [
-                l.handle,
-                l.category,
-                l.urgency,
-                `"${(l.context || '').replace(/"/g, '""')}"`,
-                new Date(l.created_at).toLocaleString()
-            ]);
-            const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url; a.download = `bbo_rolodex_${new Date().toISOString().slice(0, 10)}.csv`;
+            var headers = ['Handle', 'Category', 'Urgency', 'Context', 'Date'];
+            var rows = leads.map(function (l) { return [l.handle, l.category, l.urgency, '"' + (l.context || '').replace(/"/g, '""') + '"', new Date(l.created_at).toLocaleString()]; });
+            var csv = [headers.join(',')].concat(rows.map(function (r) { return r.join(','); })).join('\n');
+            var blob = new Blob([csv], { type: 'text/csv' });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url; a.download = 'bbo_rolodex_' + new Date().toISOString().slice(0, 10) + '.csv';
             a.click(); URL.revokeObjectURL(url);
             toast('CSV exported 📥');
         };
 
         // HELPERS
         function showLoading(show) { $('loadingState').classList.toggle('hidden', !show); }
-
-        function toast(msg, isError = false) {
+        function toast(msg, isError) {
             $('toastIcon').textContent = isError ? '❌' : '✅';
             $('toastMsg').textContent = msg;
             $('toast').classList.add('show');
-            setTimeout(() => $('toast').classList.remove('show'), 2500);
+            setTimeout(function () { $('toast').classList.remove('show'); }, 3000);
         }
     </script>
 </body>
