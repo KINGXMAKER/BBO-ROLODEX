@@ -596,7 +596,7 @@
             var apiKey = localStorage.getItem('bbo_gemini_key');
             if (!apiKey) throw new Error('No API key — tap ⚙️ Settings');
 
-            var url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + apiKey;
+            var url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + apiKey;
 
             var body = {
                 contents: [{
