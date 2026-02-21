@@ -555,21 +555,43 @@
             imageInput.value = '';
         });
 
-        // STAGE SCREENSHOT (show preview, enable parse button)
-        function stageScreenshot(file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                stagedFull = e.target.result;
-                stagedBase64 = stagedFull.split(',')[1];
-                stagedMime = file.type;
+        // COMPRESS IMAGE (iPhone screenshots are huge, Gemini has limits)
+        function compressImage(file, maxSize = 1024) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let w = img.width, h = img.height;
+                        if (w > maxSize || h > maxSize) {
+                            if (w > h) { h = Math.round(h * maxSize / w); w = maxSize; }
+                            else { w = Math.round(w * maxSize / h); h = maxSize; }
+                        }
+                        canvas.width = w;
+                        canvas.height = h;
+                        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                        const compressed = canvas.toDataURL('image/jpeg', 0.8);
+                        resolve(compressed);
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
 
-                $('stagedImg').src = stagedFull;
-                $('stagedArea').classList.remove('hidden');
-                $('dropZone').classList.add('hidden');
-                $('parseBtn').disabled = false;
-                $('parseHint').textContent = 'Screenshot ready — add notes below if you want, then hit parse';
-            };
-            reader.readAsDataURL(file);
+        // STAGE SCREENSHOT (show preview, enable parse button)
+        async function stageScreenshot(file) {
+            const compressed = await compressImage(file);
+            stagedFull = compressed;
+            stagedBase64 = compressed.split(',')[1];
+            stagedMime = 'image/jpeg';
+
+            $('stagedImg').src = compressed;
+            $('stagedArea').classList.remove('hidden');
+            $('dropZone').classList.add('hidden');
+            $('parseBtn').disabled = false;
+            $('parseHint').textContent = 'Screenshot ready — add notes below if you want, then hit parse';
         }
 
         window.clearStaged = function () {
@@ -596,8 +618,13 @@
                 clearStaged();
                 $('manualNotes').value = '';
             } catch (err) {
-                console.error(err);
-                toast('Error: ' + (err.message || err).toString().slice(0, 80), true);
+                console.error('Parse error:', err);
+                let msg = err.message || String(err);
+                if (msg.includes('API_KEY_INVALID') || msg.includes('401')) msg = 'Invalid API key — check Settings';
+                else if (msg.includes('quota') || msg.includes('429')) msg = 'API quota exceeded — wait a minute';
+                else if (msg.includes('too large') || msg.includes('413')) msg = 'Image too large — try a smaller screenshot';
+                else msg = msg.slice(0, 100);
+                toast('❌ ' + msg, true);
             }
             showLoading(false);
         };
