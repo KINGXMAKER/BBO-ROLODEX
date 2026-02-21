@@ -597,7 +597,7 @@
                 $('manualNotes').value = '';
             } catch (err) {
                 console.error(err);
-                toast('Error parsing — check API key', true);
+                toast('Error: ' + (err.message || err).toString().slice(0, 80), true);
             }
             showLoading(false);
         };
