@@ -129,6 +129,27 @@
             align-items: center;
             justify-content: space-between;
         }
+
+        .label-pill input:checked + div {
+            border-color: #FF1493;
+            background: rgba(255, 20, 147, 0.12);
+            color: #FF1493;
+        }
+
+        .state-btn {
+            background: linear-gradient(135deg, rgba(255, 20, 147, 0.08), rgba(255, 20, 147, 0.03));
+            border: 1px solid rgba(255, 20, 147, 0.25);
+            transition: all 0.2s ease;
+        }
+
+        .state-btn:active {
+            transform: scale(0.97);
+        }
+
+        .state-btn:hover {
+            border-color: rgba(255, 20, 147, 0.5);
+            background: rgba(255, 20, 147, 0.12);
+        }
     </style>
 </head>
 
@@ -170,6 +191,21 @@
 
         <!-- TAB: CAPTURE -->
         <div id="captureTab" class="p-5 space-y-4">
+
+            <!-- NJ / NY Quick Access -->
+            <div class="grid grid-cols-2 gap-3">
+                <button class="state-btn rounded-xl p-4 flex flex-col items-center gap-2" onclick="filterByState('NJ')">
+                    <span class="text-2xl">🏙️</span>
+                    <span class="text-sm font-bold text-white">NJ Contacts</span>
+                    <span class="text-[10px] text-gray-500 font-semibold" id="njCount">0 contacts</span>
+                </button>
+                <button class="state-btn rounded-xl p-4 flex flex-col items-center gap-2" onclick="filterByState('NY')">
+                    <span class="text-2xl">🗽</span>
+                    <span class="text-sm font-bold text-white">NY Contacts</span>
+                    <span class="text-[10px] text-gray-500 font-semibold" id="nyCount">0 contacts</span>
+                </button>
+            </div>
+
             <label id="dropZone"
                 class="group relative flex flex-col items-center justify-center h-52 rounded-2xl border-2 border-dashed border-gray-800 bg-gray-900/40 hover:bg-gray-800/40 transition-all cursor-pointer overflow-hidden">
                 <input type="file" id="imageInput" accept="image/*" class="hidden">
@@ -218,14 +254,19 @@
 
         <!-- TAB: LEADS -->
         <div id="leadsTab" class="hidden p-5 space-y-4">
-            <div class="relative">
-                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" fill="none"
-                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <circle cx="11" cy="11" r="8" />
-                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
-                <input type="text" id="searchInput" placeholder="Search handles, notes..."
-                    class="w-full bg-gray-900/60 border border-gray-800 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-bbo transition">
+            <div class="flex gap-2 items-center">
+                <div class="relative flex-1">
+                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8" />
+                        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    </svg>
+                    <input type="text" id="searchInput" placeholder="Search name, handle, notes..."
+                        class="w-full bg-gray-900/60 border border-gray-800 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-bbo transition">
+                </div>
+                <button onclick="openContactModal()"
+                    class="shrink-0 w-10 h-10 rounded-xl bg-bbo flex items-center justify-center text-white font-bold text-lg hover:opacity-90 transition active:scale-95"
+                    title="Add contact manually">+</button>
             </div>
             <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
                 <button
@@ -242,6 +283,12 @@
                     data-filter="cold">🔵 Cold</button>
                 <button
                     class="filter-chip shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold border border-gray-800 text-gray-500 transition"
+                    data-filter="NJ">🏙️ NJ</button>
+                <button
+                    class="filter-chip shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold border border-gray-800 text-gray-500 transition"
+                    data-filter="NY">🗽 NY</button>
+                <button
+                    class="filter-chip shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold border border-gray-800 text-gray-500 transition"
                     data-filter="Lead">Lead</button>
                 <button
                     class="filter-chip shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold border border-gray-800 text-gray-500 transition"
@@ -249,6 +296,21 @@
                 <button
                     class="filter-chip shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold border border-gray-800 text-gray-500 transition"
                     data-filter="Content Day">Content Day</button>
+                <button
+                    class="filter-chip shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold border border-gray-800 text-gray-500 transition"
+                    data-filter="Brand Ambassador">Ambassador</button>
+                <button
+                    class="filter-chip shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold border border-gray-800 text-gray-500 transition"
+                    data-filter="Camera People">Camera</button>
+                <button
+                    class="filter-chip shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold border border-gray-800 text-gray-500 transition"
+                    data-filter="BBO Assistants">Assistants</button>
+                <button
+                    class="filter-chip shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold border border-gray-800 text-gray-500 transition"
+                    data-filter="Partner">Partner</button>
+                <button
+                    class="filter-chip shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold border border-gray-800 text-gray-500 transition"
+                    data-filter="Event">Event</button>
             </div>
             <div id="leadsGrid" class="space-y-3"></div>
         </div>
@@ -288,15 +350,15 @@
         <p class="text-bbo font-bold animate-pulse text-base tracking-wide">PARSING INTEL...</p>
     </div>
 
-    <!-- RESULTS MODAL -->
-    <div id="resultsModal"
+    <!-- CONTACT MODAL (used for parsed results, manual add, and editing) -->
+    <div id="contactModal"
         class="hidden fixed inset-0 z-40 bg-black/95 flex items-end sm:items-center justify-center backdrop-blur-sm">
         <div
             class="w-full max-w-md bg-[#0D0D0D] border border-gray-800 rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden animate-slide-up max-h-[90vh] overflow-y-auto no-scrollbar">
             <div
                 class="p-4 border-b border-gray-800/50 flex justify-between items-center sticky top-0 bg-[#0D0D0D] z-10">
-                <h2 class="text-base font-bold flex items-center gap-2"><span
-                        class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>EXTRACTED DATA</h2>
+                <h2 class="text-base font-bold flex items-center gap-2" id="modalTitle"><span
+                        class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>NEW CONTACT</h2>
                 <button id="closeModal" class="p-1 text-gray-500 hover:text-white transition"><svg width="20"
                         height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="18" y1="6" x2="6" y2="18" />
@@ -306,9 +368,18 @@
             <div class="p-5 space-y-4">
                 <div id="modalPreviewWrap" class="hidden"><img id="modalPreview"
                         class="w-full h-40 object-cover rounded-xl border border-gray-800"></div>
+
+                <!-- Name -->
                 <div>
-                    <label
-                        class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Handle</label>
+                    <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Name <span class="text-bbo">*</span></label>
+                    <input type="text" id="resultName"
+                        class="w-full bg-gray-900 border border-gray-800 rounded-xl py-2.5 px-3 text-white text-sm focus:outline-none focus:border-bbo transition"
+                        placeholder="Display name or real name">
+                </div>
+
+                <!-- Handle -->
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Handle <span class="text-gray-700">(optional)</span></label>
                     <div class="relative">
                         <span class="absolute left-3 top-2.5 text-bbo font-bold text-sm">@</span>
                         <input type="text" id="resultHandle"
@@ -316,23 +387,48 @@
                             placeholder="username">
                     </div>
                 </div>
-                <div>
-                    <label
-                        class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Category</label>
-                    <select id="resultCategory"
-                        class="w-full bg-gray-900 border border-gray-800 rounded-xl p-2.5 text-white text-sm focus:outline-none focus:border-bbo transition appearance-none">
-                        <option value="Lead">💰 Lead</option>
-                        <option value="Content Day">📸 Content Day</option>
-                        <option value="Creator">🎬 Creator</option>
-                        <option value="Partner">🤝 Partner</option>
-                        <option value="Hoodie">👕 Hoodie / Merch</option>
-                        <option value="Event">🎤 Event</option>
-                        <option value="Personal">💜 Personal</option>
-                    </select>
+
+                <!-- Phone + Email row -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Phone</label>
+                        <input type="tel" id="resultPhone"
+                            class="w-full bg-gray-900 border border-gray-800 rounded-xl py-2.5 px-3 text-white text-sm focus:outline-none focus:border-bbo transition"
+                            placeholder="(555) 123-4567">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Email</label>
+                        <input type="email" id="resultEmail"
+                            class="w-full bg-gray-900 border border-gray-800 rounded-xl py-2.5 px-3 text-white text-sm focus:outline-none focus:border-bbo transition"
+                            placeholder="email@example.com">
+                    </div>
                 </div>
+
+                <!-- City + State row -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">City</label>
+                        <input type="text" id="resultCity"
+                            class="w-full bg-gray-900 border border-gray-800 rounded-xl py-2.5 px-3 text-white text-sm focus:outline-none focus:border-bbo transition"
+                            placeholder="Newark">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">State</label>
+                        <input type="text" id="resultState"
+                            class="w-full bg-gray-900 border border-gray-800 rounded-xl py-2.5 px-3 text-white text-sm focus:outline-none focus:border-bbo transition"
+                            placeholder="NJ">
+                    </div>
+                </div>
+
+                <!-- Labels (multi-select pills) -->
                 <div>
-                    <label
-                        class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Urgency</label>
+                    <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Labels <span class="text-gray-700">(select all that apply)</span></label>
+                    <div class="flex flex-wrap gap-2" id="labelPills"></div>
+                </div>
+
+                <!-- Urgency -->
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Urgency</label>
                     <div class="grid grid-cols-3 gap-2">
                         <label class="cursor-pointer"><input type="radio" name="urgency" value="hot"
                                 class="hidden peer">
@@ -354,12 +450,13 @@
                         </label>
                     </div>
                 </div>
+
+                <!-- Notes -->
                 <div>
-                    <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Context /
-                        Notes</label>
+                    <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Context / Notes</label>
                     <textarea id="resultContext" rows="3"
                         class="w-full bg-gray-900 border border-gray-800 rounded-xl p-3 text-white text-sm focus:outline-none focus:border-bbo transition leading-relaxed"
-                        placeholder="What did they want?"></textarea>
+                        placeholder="What did they want? Any extra context..."></textarea>
                 </div>
             </div>
             <div class="p-4 border-t border-gray-800/50 flex gap-3 sticky bottom-0 bg-[#0D0D0D]">
@@ -404,39 +501,86 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT — NO SDK, DIRECT REST API FOR MAX COMPATIBILITY -->
+    <!-- JAVASCRIPT -->
     <script>
-        // STATE
+        // ===== STATE =====
         const DB_NAME = 'bbo_rolodex';
-        const DB_VERSION = 1;
+        const DB_VERSION = 2;
         const STORE = 'leads';
         let db;
         let currentFilter = 'all';
         let stagedBase64 = null;
         let stagedMime = null;
         let stagedFull = null;
+        let editingId = null; // null = new contact, number = editing existing
 
         const $ = id => document.getElementById(id);
 
-        // INIT
+        const ALL_LABELS = [
+            { value: 'Lead', emoji: '💰' },
+            { value: 'Content Day', emoji: '📸' },
+            { value: 'Creator', emoji: '🎬' },
+            { value: 'Partner', emoji: '🤝' },
+            { value: 'Hoodie', emoji: '👕' },
+            { value: 'Event', emoji: '🎤' },
+            { value: 'Personal', emoji: '💜' },
+            { value: 'Brand Ambassador', emoji: '🌟' },
+            { value: 'Camera People', emoji: '📷' },
+            { value: 'BBO Assistants', emoji: '🛠️' },
+        ];
+
+        // ===== INIT =====
         (async () => {
+            buildLabelPills();
             await initDB();
+            await migrateV1Data();
             await renderLeads();
+            await updateStateCounts();
             loadSettings();
         })();
 
-        // INDEXEDDB
+        // ===== BUILD LABEL PILLS =====
+        function buildLabelPills() {
+            var container = $('labelPills');
+            container.innerHTML = ALL_LABELS.map(function (l) {
+                return '<label class="label-pill cursor-pointer">' +
+                    '<input type="checkbox" class="hidden" value="' + l.value + '">' +
+                    '<div class="px-3 py-1.5 rounded-full border border-gray-800 text-xs font-semibold text-gray-500 transition select-none">' +
+                    l.emoji + ' ' + l.value + '</div></label>';
+            }).join('');
+        }
+
+        function getSelectedLabels() {
+            var checks = $('labelPills').querySelectorAll('input[type="checkbox"]:checked');
+            return Array.from(checks).map(function (c) { return c.value; });
+        }
+
+        function setSelectedLabels(labels) {
+            var checks = $('labelPills').querySelectorAll('input[type="checkbox"]');
+            checks.forEach(function (c) {
+                c.checked = (labels || []).indexOf(c.value) !== -1;
+            });
+        }
+
+        // ===== INDEXEDDB =====
         function initDB() {
             return new Promise((resolve, reject) => {
                 const req = indexedDB.open(DB_NAME, DB_VERSION);
                 req.onupgradeneeded = e => {
                     const d = e.target.result;
+                    const tx = e.target.transaction;
                     if (!d.objectStoreNames.contains(STORE)) {
                         const s = d.createObjectStore(STORE, { keyPath: 'id', autoIncrement: true });
                         s.createIndex('handle', 'handle');
                         s.createIndex('urgency', 'urgency');
                         s.createIndex('category', 'category');
                         s.createIndex('created_at', 'created_at');
+                        s.createIndex('name', 'name');
+                        s.createIndex('state', 'state');
+                    } else {
+                        const s = tx.objectStore(STORE);
+                        if (!s.indexNames.contains('name')) s.createIndex('name', 'name');
+                        if (!s.indexNames.contains('state')) s.createIndex('state', 'state');
                     }
                 };
                 req.onsuccess = e => { db = e.target.result; resolve(); };
@@ -444,10 +588,38 @@
             });
         }
 
+        // Migrate v1 records: category string → labels array, add name field
+        async function migrateV1Data() {
+            var all = await dbGetAll();
+            for (var i = 0; i < all.length; i++) {
+                var lead = all[i];
+                var needsUpdate = false;
+                if (lead.category && !lead.labels) {
+                    lead.labels = [lead.category];
+                    needsUpdate = true;
+                }
+                if (!lead.name) {
+                    lead.name = lead.handle || '';
+                    needsUpdate = true;
+                }
+                if (needsUpdate) {
+                    await dbPut(lead);
+                }
+            }
+        }
+
         function dbAdd(lead) {
             return new Promise((resolve, reject) => {
                 const tx = db.transaction(STORE, 'readwrite');
                 tx.objectStore(STORE).add(lead).onsuccess = e => resolve(e.target.result);
+                tx.onerror = e => reject(e);
+            });
+        }
+
+        function dbPut(lead) {
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(STORE, 'readwrite');
+                tx.objectStore(STORE).put(lead).onsuccess = e => resolve(e.target.result);
                 tx.onerror = e => reject(e);
             });
         }
@@ -468,7 +640,46 @@
             });
         }
 
-        // SETTINGS
+        // ===== STATE HELPERS =====
+        function isNJ(state) {
+            if (!state) return false;
+            var s = state.trim().toUpperCase();
+            return s === 'NJ' || s === 'NEW JERSEY';
+        }
+
+        function isNY(state) {
+            if (!state) return false;
+            var s = state.trim().toUpperCase();
+            return s === 'NY' || s === 'NEW YORK';
+        }
+
+        async function updateStateCounts() {
+            var all = await dbGetAll();
+            var nj = 0, ny = 0;
+            all.forEach(function (l) {
+                if (isNJ(l.state)) nj++;
+                if (isNY(l.state)) ny++;
+            });
+            $('njCount').textContent = nj + ' contact' + (nj !== 1 ? 's' : '');
+            $('nyCount').textContent = ny + ' contact' + (ny !== 1 ? 's' : '');
+        }
+
+        window.filterByState = function (state) {
+            currentFilter = state;
+            switchTab('leads');
+            // Activate the correct filter chip
+            document.querySelectorAll('.filter-chip').forEach(function (c) {
+                c.classList.remove('active', 'bg-bbo', 'border-bbo', 'text-white');
+                c.classList.add('border-gray-800', 'text-gray-500');
+                if (c.dataset.filter === state) {
+                    c.classList.add('active', 'bg-bbo', 'border-bbo', 'text-white');
+                    c.classList.remove('border-gray-800', 'text-gray-500');
+                }
+            });
+            renderLeads();
+        };
+
+        // ===== SETTINGS =====
         function loadSettings() {
             const key = localStorage.getItem('bbo_gemini_key');
             const webhook = localStorage.getItem('bbo_webhook');
@@ -484,16 +695,17 @@
             localStorage.setItem('bbo_gemini_key', key);
             localStorage.setItem('bbo_webhook', $('webhookInput').value.trim());
             $('settingsModal').classList.add('hidden');
-            toast('Settings saved 💅');
+            toast('Settings saved');
         });
 
-        // TAB SWITCHING
+        // ===== TAB SWITCHING =====
         window.switchTab = function (tab) {
             if (tab === 'capture') {
                 $('captureTab').classList.remove('hidden');
                 $('leadsTab').classList.add('hidden');
                 $('navCapture').classList.replace('text-gray-600', 'text-bbo');
                 $('navLeads').classList.replace('text-bbo', 'text-gray-600');
+                updateStateCounts();
             } else {
                 $('captureTab').classList.add('hidden');
                 $('leadsTab').classList.remove('hidden');
@@ -503,7 +715,7 @@
             }
         };
 
-        // DRAG & DROP (for desktop)
+        // ===== DRAG & DROP =====
         const dropZone = $('dropZone');
         ['dragenter', 'dragover'].forEach(ev => {
             dropZone.addEventListener(ev, e => { e.preventDefault(); dropZone.classList.add('drag-glow'); });
@@ -523,7 +735,7 @@
             $('imageInput').value = '';
         });
 
-        // COMPRESS IMAGE (iPhone screenshots are huge)
+        // COMPRESS IMAGE
         function compressImage(file, maxSize) {
             maxSize = maxSize || 1024;
             return new Promise(function (resolve) {
@@ -569,7 +781,7 @@
             $('parseHint').textContent = 'Drop a screenshot above to enable parsing';
         };
 
-        // SUBMIT
+        // ===== SUBMIT CAPTURE =====
         window.submitCapture = async function () {
             if (!stagedBase64) return toast('Drop a screenshot first', true);
             showLoading(true);
@@ -577,7 +789,7 @@
                 var notes = $('manualNotes').value.trim();
                 var prompt = notes ? buildPromptWithNotes(notes) : buildPrompt();
                 var data = await callGemini(prompt, stagedBase64, stagedMime);
-                populateResults(data, stagedFull);
+                populateModal(data, stagedFull);
                 clearStaged();
                 $('manualNotes').value = '';
             } catch (err) {
@@ -591,7 +803,7 @@
             showLoading(false);
         };
 
-        // ===== GEMINI REST API (no SDK needed!) =====
+        // ===== GEMINI REST API =====
         async function callGemini(promptText, imageBase64, imageMime) {
             var apiKey = localStorage.getItem('bbo_gemini_key');
             if (!apiKey) throw new Error('No API key — tap ⚙️ Settings');
@@ -624,89 +836,215 @@
         }
 
         function buildPrompt() {
-            return 'You are a CRM assistant for "Bad Bitches Only" (BBO), an urban lifestyle brand run by King Maker.\n\nAnalyze this screenshot of an Instagram DM or social media interaction. Extract:\n{\n    "handle": "the username without @",\n    "category": "Lead, Content Day, Creator, Partner, Hoodie, Event, or Personal",\n    "urgency": "hot (ready to buy/book), warm (interested), or cold (just browsing)",\n    "context": "1-2 sentence summary of what they want"\n}\n\nReturn ONLY valid JSON. No markdown, no code blocks.';
+            return 'You are a CRM assistant for "Bad Bitches Only" (BBO), an urban lifestyle brand run by King Maker.\n\nAnalyze this screenshot of an Instagram DM or social media interaction. Extract as much as possible:\n{\n    "name": "their display name or real name if visible, otherwise empty string",\n    "handle": "the username without @",\n    "phone": "phone number if visible, otherwise empty string",\n    "email": "email address if visible, otherwise empty string",\n    "city": "city if mentioned or visible, otherwise empty string",\n    "state": "US state abbreviation if mentioned or visible (e.g. NJ, NY), otherwise empty string",\n    "labels": ["array of applicable labels from: Lead, Content Day, Creator, Partner, Hoodie, Event, Personal, Brand Ambassador, Camera People, BBO Assistants"],\n    "urgency": "hot (ready to buy/book), warm (interested), or cold (just browsing)",\n    "context": "1-2 sentence summary of what they want"\n}\n\nReturn ONLY valid JSON. No markdown, no code blocks. If a field is not visible, use empty string or empty array for labels.';
         }
 
         function buildPromptWithNotes(notes) {
-            return 'You are a CRM assistant for "Bad Bitches Only" (BBO), an urban lifestyle brand run by King Maker.\n\nI\'m giving you TWO inputs about the SAME contact:\n1. A SCREENSHOT of a DM or social media interaction\n2. MY NOTES with extra context about this person\n\nCombine both to extract the most complete picture:\n{\n    "handle": "the username without @ (prefer what you see in the screenshot)",\n    "category": "Lead, Content Day, Creator, Partner, Hoodie, Event, or Personal",\n    "urgency": "hot (ready to buy/book), warm (interested), or cold (just browsing)",\n    "context": "Combined 2-3 sentence summary using BOTH the screenshot AND my notes"\n}\n\nMY NOTES: "' + notes + '"\n\nReturn ONLY valid JSON. No markdown, no code blocks.';
+            return 'You are a CRM assistant for "Bad Bitches Only" (BBO), an urban lifestyle brand run by King Maker.\n\nI\'m giving you TWO inputs about the SAME contact:\n1. A SCREENSHOT of a DM or social media interaction\n2. MY NOTES with extra context about this person\n\nCombine both to extract the most complete picture:\n{\n    "name": "their display name or real name if visible, otherwise empty string",\n    "handle": "the username without @ (prefer what you see in the screenshot)",\n    "phone": "phone number if visible or mentioned in notes, otherwise empty string",\n    "email": "email address if visible or mentioned in notes, otherwise empty string",\n    "city": "city if mentioned or visible, otherwise empty string",\n    "state": "US state abbreviation if mentioned or visible (e.g. NJ, NY), otherwise empty string",\n    "labels": ["array of applicable labels from: Lead, Content Day, Creator, Partner, Hoodie, Event, Personal, Brand Ambassador, Camera People, BBO Assistants"],\n    "urgency": "hot (ready to buy/book), warm (interested), or cold (just browsing)",\n    "context": "Combined 2-3 sentence summary using BOTH the screenshot AND my notes"\n}\n\nMY NOTES: "' + notes + '"\n\nReturn ONLY valid JSON. No markdown, no code blocks. If a field is not available, use empty string or empty array for labels.';
         }
 
         function cleanJSON(text) {
             try {
-                return JSON.parse(text.replace(/```json/g, '').replace(/```/g, '').trim());
+                var parsed = JSON.parse(text.replace(/```json/g, '').replace(/```/g, '').trim());
+                // Normalize: ensure labels is an array
+                if (parsed.category && !parsed.labels) {
+                    parsed.labels = [parsed.category];
+                }
+                if (!Array.isArray(parsed.labels)) {
+                    parsed.labels = parsed.labels ? [parsed.labels] : [];
+                }
+                return parsed;
             } catch (e) {
-                return { handle: '', category: 'Personal', urgency: 'warm', context: text };
+                return { name: '', handle: '', phone: '', email: '', city: '', state: '', labels: [], urgency: 'warm', context: text };
             }
         }
 
-        // RESULTS
-        function populateResults(data, screenshot) {
+        // ===== CONTACT MODAL =====
+        function openContactModal(contactData, screenshot) {
+            editingId = null;
+            resetModal();
+            if (contactData) {
+                populateModalFields(contactData, screenshot);
+            }
+            $('modalTitle').innerHTML = '<span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>NEW CONTACT';
+            $('saveBtn').innerHTML = '💾 SAVE TO ROSTER';
+            $('contactModal').classList.remove('hidden');
+        }
+
+        function openEditModal(lead) {
+            editingId = lead.id;
+            resetModal();
+            populateModalFields(lead, lead.screenshot);
+            $('modalTitle').innerHTML = '<span class="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></span>EDIT CONTACT';
+            $('saveBtn').innerHTML = '💾 UPDATE CONTACT';
+            $('contactModal').classList.remove('hidden');
+        }
+
+        function resetModal() {
+            $('resultName').value = '';
+            $('resultHandle').value = '';
+            $('resultPhone').value = '';
+            $('resultEmail').value = '';
+            $('resultCity').value = '';
+            $('resultState').value = '';
+            $('resultContext').value = '';
+            setSelectedLabels([]);
+            document.querySelector('input[name="urgency"][value="warm"]').checked = true;
+            $('modalPreviewWrap').classList.add('hidden');
+        }
+
+        function populateModalFields(data, screenshot) {
+            $('resultName').value = data.name || '';
             $('resultHandle').value = (data.handle || '').replace('@', '');
-            $('resultCategory').value = data.category || 'Lead';
+            $('resultPhone').value = data.phone || '';
+            $('resultEmail').value = data.email || '';
+            $('resultCity').value = data.city || '';
+            $('resultState').value = data.state || '';
             $('resultContext').value = data.context || '';
+
+            // Labels
+            var labels = data.labels || [];
+            if (!labels.length && data.category) labels = [data.category];
+            setSelectedLabels(labels);
+
+            // Urgency
             var urg = data.urgency || 'warm';
             var radio = document.querySelector('input[name="urgency"][value="' + urg + '"]');
             if (radio) radio.checked = true;
-            if (screenshot) { $('modalPreviewWrap').classList.remove('hidden'); $('modalPreview').src = screenshot; }
-            else { $('modalPreviewWrap').classList.add('hidden'); }
-            $('resultsModal').classList.remove('hidden');
+
+            // Screenshot
+            if (screenshot) {
+                $('modalPreviewWrap').classList.remove('hidden');
+                $('modalPreview').src = screenshot;
+            } else {
+                $('modalPreviewWrap').classList.add('hidden');
+            }
         }
 
-        $('closeModal').addEventListener('click', function () { $('resultsModal').classList.add('hidden'); stagedFull = null; });
+        function populateModal(data, screenshot) {
+            editingId = null;
+            resetModal();
+            populateModalFields(data, screenshot);
+            $('modalTitle').innerHTML = '<span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>EXTRACTED DATA';
+            $('saveBtn').innerHTML = '💾 SAVE TO ROSTER';
+            $('contactModal').classList.remove('hidden');
+        }
 
-        // SAVE
+        $('closeModal').addEventListener('click', function () {
+            $('contactModal').classList.add('hidden');
+            editingId = null;
+            stagedFull = null;
+        });
+
+        // ===== SAVE =====
         $('saveBtn').addEventListener('click', async function () {
+            var name = $('resultName').value.trim();
             var handle = $('resultHandle').value.trim();
-            if (!handle) return toast('Enter a handle', true);
+            if (!name && !handle) return toast('Enter at least a name', true);
+
             var urgencyEl = document.querySelector('input[name="urgency"]:checked');
+            var labels = getSelectedLabels();
+
             var lead = {
-                handle: '@' + handle.replace('@', ''),
-                category: $('resultCategory').value,
+                name: name,
+                handle: handle ? '@' + handle.replace('@', '') : '',
+                phone: $('resultPhone').value.trim(),
+                email: $('resultEmail').value.trim(),
+                city: $('resultCity').value.trim(),
+                state: $('resultState').value.trim(),
+                labels: labels,
+                category: labels[0] || '', // backward compat
                 urgency: urgencyEl ? urgencyEl.value : 'warm',
                 context: $('resultContext').value.trim(),
                 screenshot: stagedFull || null,
-                source: 'screenshot',
+                source: editingId ? 'edited' : (stagedFull ? 'screenshot' : 'manual'),
                 created_at: new Date().toISOString()
             };
-            await dbAdd(lead);
-            var webhookUrl = localStorage.getItem('bbo_webhook');
-            if (webhookUrl) {
-                try {
-                    await fetch(webhookUrl, {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ handle: lead.handle, category: lead.category, urgency: lead.urgency, context: lead.context, timestamp: lead.created_at })
-                    });
-                } catch (e) { console.warn('Webhook failed:', e); }
+
+            if (editingId) {
+                lead.id = editingId;
+                // Preserve original created_at and screenshot if not changing
+                var existing = await dbGetById(editingId);
+                if (existing) {
+                    lead.created_at = existing.created_at;
+                    if (!lead.screenshot && existing.screenshot) lead.screenshot = existing.screenshot;
+                }
+                await dbPut(lead);
+                toast('Contact updated');
+            } else {
+                await dbAdd(lead);
+                // Webhook
+                var webhookUrl = localStorage.getItem('bbo_webhook');
+                if (webhookUrl) {
+                    try {
+                        await fetch(webhookUrl, {
+                            method: 'POST', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ name: lead.name, handle: lead.handle, phone: lead.phone, email: lead.email, city: lead.city, state: lead.state, labels: lead.labels, urgency: lead.urgency, context: lead.context, timestamp: lead.created_at })
+                        });
+                    } catch (e) { console.warn('Webhook failed:', e); }
+                }
+                toast('Saved to The Roster! 🔥');
             }
-            toast('Saved to The Roster! 🔥');
-            $('resultsModal').classList.add('hidden');
+
+            $('contactModal').classList.add('hidden');
+            editingId = null;
             stagedFull = null;
             await renderLeads();
+            await updateStateCounts();
         });
 
-        // COPY
+        function dbGetById(id) {
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(STORE, 'readonly');
+                tx.objectStore(STORE).get(id).onsuccess = e => resolve(e.target.result);
+                tx.onerror = e => reject(e);
+            });
+        }
+
+        // ===== COPY =====
         $('copyBtn').addEventListener('click', function () {
-            var text = 'Handle: @' + $('resultHandle').value + '\nCategory: ' + $('resultCategory').value + '\nUrgency: ' + (document.querySelector('input[name="urgency"]:checked') || {}).value + '\nContext: ' + $('resultContext').value;
-            navigator.clipboard.writeText(text);
+            var parts = [];
+            var name = $('resultName').value.trim();
+            var handle = $('resultHandle').value.trim();
+            if (name) parts.push('Name: ' + name);
+            if (handle) parts.push('Handle: @' + handle);
+            var phone = $('resultPhone').value.trim();
+            if (phone) parts.push('Phone: ' + phone);
+            var email = $('resultEmail').value.trim();
+            if (email) parts.push('Email: ' + email);
+            var city = $('resultCity').value.trim();
+            var state = $('resultState').value.trim();
+            if (city || state) parts.push('Location: ' + [city, state].filter(Boolean).join(', '));
+            var labels = getSelectedLabels();
+            if (labels.length) parts.push('Labels: ' + labels.join(', '));
+            var urg = (document.querySelector('input[name="urgency"]:checked') || {}).value;
+            if (urg) parts.push('Urgency: ' + urg);
+            var ctx = $('resultContext').value.trim();
+            if (ctx) parts.push('Context: ' + ctx);
+            navigator.clipboard.writeText(parts.join('\n'));
             $('copyBtn').textContent = '✅ COPIED';
-            setTimeout(function () { $('copyBtn').textContent = '📋 COPY'; }, 1500);
+            setTimeout(function () { $('copyBtn').innerHTML = '📋 COPY'; }, 1500);
         });
 
-        // RENDER LEADS
+        // ===== RENDER LEADS =====
         async function renderLeads() {
             var all = await dbGetAll();
             $('leadCount').textContent = all.length;
             var search = ($('searchInput') ? $('searchInput').value : '').toLowerCase();
             var filtered = all.filter(function (l) {
-                if (search) { var s = (l.handle + ' ' + l.context + ' ' + l.category).toLowerCase(); if (s.indexOf(search) === -1) return false; }
+                var labels = l.labels || (l.category ? [l.category] : []);
+                var searchText = [l.name, l.handle, l.context, l.phone, l.email, l.city, l.state].concat(labels).join(' ').toLowerCase();
+                if (search && searchText.indexOf(search) === -1) return false;
                 if (currentFilter === 'all') return true;
                 if (currentFilter === 'hot' || currentFilter === 'warm' || currentFilter === 'cold') return l.urgency === currentFilter;
-                return l.category === currentFilter;
+                if (currentFilter === 'NJ') return isNJ(l.state);
+                if (currentFilter === 'NY') return isNY(l.state);
+                return labels.indexOf(currentFilter) !== -1;
             });
             filtered.sort(function (a, b) { return new Date(b.created_at) - new Date(a.created_at); });
             var grid = $('leadsGrid');
             if (filtered.length === 0) {
-                grid.innerHTML = '<div class="text-center py-16 text-gray-600"><p class="text-3xl mb-3">📋</p><p class="font-bold text-gray-500">' + (all.length === 0 ? 'No leads yet' : 'No matches') + '</p></div>';
+                grid.innerHTML = '<div class="text-center py-16 text-gray-600"><p class="text-3xl mb-3">📋</p><p class="font-bold text-gray-500">' + (all.length === 0 ? 'No contacts yet' : 'No matches') + '</p></div>';
                 return;
             }
             grid.innerHTML = filtered.map(function (l) {
@@ -715,23 +1053,52 @@
                 var time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
                 function esc(t) { var el = document.createElement('div'); el.textContent = t || ''; return el.innerHTML; }
                 var urgClass = l.urgency === 'hot' ? 'bg-bbo/15 text-bbo' : l.urgency === 'warm' ? 'bg-yellow-500/15 text-yellow-400' : 'bg-blue-500/15 text-blue-400';
-                return '<div class="card-in bg-gray-900/60 border border-gray-800 rounded-xl p-4 space-y-2">' +
-                    '<div class="flex justify-between items-start"><span class="text-bbo font-bold text-sm">' + esc(l.handle) + '</span><span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ' + urgClass + '">' + l.urgency + '</span></div>' +
-                    '<span class="inline-block text-[10px] font-semibold px-2 py-0.5 rounded bg-gray-800 text-gray-400">' + esc(l.category) + '</span>' +
-                    '<p class="text-xs text-gray-400 leading-relaxed">' + (esc(l.context) || 'No context') + '</p>' +
+                var labels = l.labels || (l.category ? [l.category] : []);
+
+                // Name line
+                var nameDisplay = esc(l.name || l.handle || 'Unnamed');
+                var handleDisplay = l.handle ? '<span class="text-bbo text-xs font-mono ml-1">' + esc(l.handle) + '</span>' : '';
+
+                // Location line
+                var locParts = [l.city, l.state].filter(Boolean);
+                var locDisplay = locParts.length ? '<span class="text-[10px] text-gray-500">📍 ' + esc(locParts.join(', ')) + '</span>' : '';
+
+                // Contact info
+                var contactBits = [];
+                if (l.phone) contactBits.push('📱 ' + esc(l.phone));
+                if (l.email) contactBits.push('✉️ ' + esc(l.email));
+                var contactDisplay = contactBits.length ? '<div class="flex flex-wrap gap-3 text-[10px] text-gray-500">' + contactBits.join('') + '</div>' : '';
+
+                // Label pills
+                var labelHtml = labels.map(function (lb) {
+                    return '<span class="inline-block text-[10px] font-semibold px-2 py-0.5 rounded bg-gray-800 text-gray-400">' + esc(lb) + '</span>';
+                }).join(' ');
+
+                return '<div class="card-in bg-gray-900/60 border border-gray-800 rounded-xl p-4 space-y-2 cursor-pointer" onclick="window._editLead(' + l.id + ')">' +
+                    '<div class="flex justify-between items-start"><div class="flex items-center flex-wrap gap-1"><span class="font-bold text-sm text-white">' + nameDisplay + '</span>' + handleDisplay + '</div><span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full shrink-0 ' + urgClass + '">' + l.urgency + '</span></div>' +
+                    (locDisplay ? '<div>' + locDisplay + '</div>' : '') +
+                    contactDisplay +
+                    (labelHtml ? '<div class="flex flex-wrap gap-1">' + labelHtml + '</div>' : '') +
+                    '<p class="text-xs text-gray-400 leading-relaxed">' + (esc(l.context) || '<span class="text-gray-600">No notes</span>') + '</p>' +
                     '<div class="flex justify-between items-center pt-1 border-t border-gray-800/50"><span class="text-[10px] text-gray-600">' + date + ' · ' + time + '</span>' +
-                    '<button onclick="window._deleteLead(' + l.id + ')" class="text-[10px] text-red-500/60 hover:text-red-400 font-semibold transition">DELETE</button></div></div>';
+                    '<button onclick="event.stopPropagation(); window._deleteLead(' + l.id + ')" class="text-[10px] text-red-500/60 hover:text-red-400 font-semibold transition">DELETE</button></div></div>';
             }).join('');
         }
 
-        window._deleteLead = async function (id) {
-            if (!confirm('Delete this lead?')) return;
-            await dbDelete(id);
-            toast('Lead deleted');
-            await renderLeads();
+        window._editLead = async function (id) {
+            var lead = await dbGetById(id);
+            if (lead) openEditModal(lead);
         };
 
-        // FILTERS
+        window._deleteLead = async function (id) {
+            if (!confirm('Delete this contact?')) return;
+            await dbDelete(id);
+            toast('Contact deleted');
+            await renderLeads();
+            await updateStateCounts();
+        };
+
+        // ===== FILTERS =====
         document.querySelectorAll('.filter-chip').forEach(function (chip) {
             chip.addEventListener('click', function () {
                 document.querySelectorAll('.filter-chip').forEach(function (c) {
@@ -748,12 +1115,26 @@
         if (firstChip) { firstChip.classList.add('bg-bbo', 'border-bbo', 'text-white'); firstChip.classList.remove('border-gray-800', 'text-gray-500'); }
         if ($('searchInput')) $('searchInput').addEventListener('input', function () { renderLeads(); });
 
-        // EXPORT
+        // ===== EXPORT =====
         window.exportCSV = async function () {
             var leads = await dbGetAll();
-            if (!leads.length) return toast('No leads to export', true);
-            var headers = ['Handle', 'Category', 'Urgency', 'Context', 'Date'];
-            var rows = leads.map(function (l) { return [l.handle, l.category, l.urgency, '"' + (l.context || '').replace(/"/g, '""') + '"', new Date(l.created_at).toLocaleString()]; });
+            if (!leads.length) return toast('No contacts to export', true);
+            var headers = ['Name', 'Handle', 'Phone', 'Email', 'City', 'State', 'Labels', 'Urgency', 'Context', 'Date'];
+            var rows = leads.map(function (l) {
+                var labels = (l.labels || (l.category ? [l.category] : [])).join('; ');
+                return [
+                    '"' + (l.name || '').replace(/"/g, '""') + '"',
+                    l.handle || '',
+                    l.phone || '',
+                    l.email || '',
+                    l.city || '',
+                    l.state || '',
+                    '"' + labels.replace(/"/g, '""') + '"',
+                    l.urgency || '',
+                    '"' + (l.context || '').replace(/"/g, '""') + '"',
+                    new Date(l.created_at).toLocaleString()
+                ];
+            });
             var csv = [headers.join(',')].concat(rows.map(function (r) { return r.join(','); })).join('\n');
             var blob = new Blob([csv], { type: 'text/csv' });
             var url = URL.createObjectURL(blob);
@@ -763,7 +1144,7 @@
             toast('CSV exported 📥');
         };
 
-        // HELPERS
+        // ===== HELPERS =====
         function showLoading(show) { $('loadingState').classList.toggle('hidden', !show); }
         function toast(msg, isError) {
             $('toastIcon').textContent = isError ? '❌' : '✅';
