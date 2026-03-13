@@ -513,6 +513,7 @@
         let stagedMime = null;
         let stagedFull = null;
         let editingId = null; // null = new contact, number = editing existing
+        let modalScreenshot = null; // holds screenshot for the currently open modal
 
         const $ = id => document.getElementById(id);
 
@@ -862,6 +863,7 @@
         // ===== CONTACT MODAL =====
         function openContactModal(contactData, screenshot) {
             editingId = null;
+            modalScreenshot = null;
             resetModal();
             if (contactData) {
                 populateModalFields(contactData, screenshot);
@@ -873,6 +875,7 @@
 
         function openEditModal(lead) {
             editingId = lead.id;
+            modalScreenshot = lead.screenshot || null;
             resetModal();
             populateModalFields(lead, lead.screenshot);
             $('modalTitle').innerHTML = '<span class="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></span>EDIT CONTACT';
@@ -912,8 +915,9 @@
             var radio = document.querySelector('input[name="urgency"][value="' + urg + '"]');
             if (radio) radio.checked = true;
 
-            // Screenshot
+            // Screenshot — persist for save
             if (screenshot) {
+                modalScreenshot = screenshot;
                 $('modalPreviewWrap').classList.remove('hidden');
                 $('modalPreview').src = screenshot;
             } else {
@@ -923,6 +927,7 @@
 
         function populateModal(data, screenshot) {
             editingId = null;
+            modalScreenshot = screenshot || null;
             resetModal();
             populateModalFields(data, screenshot);
             $('modalTitle').innerHTML = '<span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>EXTRACTED DATA';
@@ -933,7 +938,7 @@
         $('closeModal').addEventListener('click', function () {
             $('contactModal').classList.add('hidden');
             editingId = null;
-            stagedFull = null;
+            modalScreenshot = null;
         });
 
         // ===== SAVE =====
@@ -956,8 +961,8 @@
                 category: labels[0] || '', // backward compat
                 urgency: urgencyEl ? urgencyEl.value : 'warm',
                 context: $('resultContext').value.trim(),
-                screenshot: stagedFull || null,
-                source: editingId ? 'edited' : (stagedFull ? 'screenshot' : 'manual'),
+                screenshot: modalScreenshot || null,
+                source: editingId ? 'edited' : (modalScreenshot ? 'screenshot' : 'manual'),
                 created_at: new Date().toISOString()
             };
 
@@ -988,7 +993,7 @@
 
             $('contactModal').classList.add('hidden');
             editingId = null;
-            stagedFull = null;
+            modalScreenshot = null;
             await renderLeads();
             await updateStateCounts();
         });
