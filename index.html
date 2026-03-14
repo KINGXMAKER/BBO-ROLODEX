@@ -130,7 +130,7 @@
             justify-content: space-between;
         }
 
-        .label-pill input:checked + div {
+        .label-pill input:checked+div {
             border-color: #FF1493;
             background: rgba(255, 20, 147, 0.12);
             color: #FF1493;
@@ -311,9 +311,25 @@
                 <button
                     class="filter-chip shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold border border-gray-800 text-gray-500 transition"
                     data-filter="Event">Event</button>
+                <button
+                    class="filter-chip shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold border border-gray-800 text-gray-500 transition"
+                    data-filter="Fan Club">⭐ Fan Club</button>
+                <button
+                    class="filter-chip shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold border border-gray-800 text-gray-500 transition"
+                    data-filter="Celeb">👑 Celeb</button>
+                <button
+                    class="filter-chip shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold border border-gray-800 text-gray-500 transition"
+                    data-filter="Podcast Guest">🎙️ Podcast Guest</button>
+                <button
+                    class="filter-chip shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold border border-gray-800 text-gray-500 transition"
+                    data-filter="Man">♂️ Man</button>
+                <button
+                    class="filter-chip shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold border border-gray-800 text-gray-500 transition"
+                    data-filter="Woman">♀️ Woman</button>
             </div>
             <div id="leadsGrid" class="space-y-3"></div>
         </div>
+
     </main>
 
     <!-- BOTTOM NAV -->
@@ -371,7 +387,8 @@
 
                 <!-- Name -->
                 <div>
-                    <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Name <span class="text-bbo">*</span></label>
+                    <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Name <span
+                            class="text-bbo">*</span></label>
                     <input type="text" id="resultName"
                         class="w-full bg-gray-900 border border-gray-800 rounded-xl py-2.5 px-3 text-white text-sm focus:outline-none focus:border-bbo transition"
                         placeholder="Display name or real name">
@@ -379,7 +396,8 @@
 
                 <!-- Handle -->
                 <div>
-                    <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Handle <span class="text-gray-700">(optional)</span></label>
+                    <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Handle
+                        <span class="text-gray-700">(optional)</span></label>
                     <div class="relative">
                         <span class="absolute left-3 top-2.5 text-bbo font-bold text-sm">@</span>
                         <input type="text" id="resultHandle"
@@ -391,13 +409,15 @@
                 <!-- Phone + Email row -->
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Phone</label>
+                        <label
+                            class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Phone</label>
                         <input type="tel" id="resultPhone"
                             class="w-full bg-gray-900 border border-gray-800 rounded-xl py-2.5 px-3 text-white text-sm focus:outline-none focus:border-bbo transition"
                             placeholder="(555) 123-4567">
                     </div>
                     <div>
-                        <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Email</label>
+                        <label
+                            class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Email</label>
                         <input type="email" id="resultEmail"
                             class="w-full bg-gray-900 border border-gray-800 rounded-xl py-2.5 px-3 text-white text-sm focus:outline-none focus:border-bbo transition"
                             placeholder="email@example.com">
@@ -407,13 +427,15 @@
                 <!-- City + State row -->
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">City</label>
+                        <label
+                            class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">City</label>
                         <input type="text" id="resultCity"
                             class="w-full bg-gray-900 border border-gray-800 rounded-xl py-2.5 px-3 text-white text-sm focus:outline-none focus:border-bbo transition"
                             placeholder="Newark">
                     </div>
                     <div>
-                        <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">State</label>
+                        <label
+                            class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">State</label>
                         <input type="text" id="resultState"
                             class="w-full bg-gray-900 border border-gray-800 rounded-xl py-2.5 px-3 text-white text-sm focus:outline-none focus:border-bbo transition"
                             placeholder="NJ">
@@ -422,13 +444,31 @@
 
                 <!-- Labels (multi-select pills) -->
                 <div>
-                    <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Labels <span class="text-gray-700">(select all that apply)</span></label>
+                    <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Labels <span
+                            class="text-gray-700">(select all that apply)</span></label>
                     <div class="flex flex-wrap gap-2" id="labelPills"></div>
+                </div>
+
+                <!-- Gender -->
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Gender</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <label class="cursor-pointer"><input type="radio" name="gender" value="" class="hidden peer" checked>
+                            <div class="text-center py-2 rounded-xl border border-gray-800 text-xs font-bold text-gray-500 peer-checked:border-gray-500 peer-checked:bg-gray-500/10 peer-checked:text-gray-300 transition">— N/A</div>
+                        </label>
+                        <label class="cursor-pointer"><input type="radio" name="gender" value="Man" class="hidden peer">
+                            <div class="text-center py-2 rounded-xl border border-gray-800 text-xs font-bold text-gray-500 peer-checked:border-blue-500 peer-checked:bg-blue-500/10 peer-checked:text-blue-400 transition">♂️ MAN</div>
+                        </label>
+                        <label class="cursor-pointer"><input type="radio" name="gender" value="Woman" class="hidden peer">
+                            <div class="text-center py-2 rounded-xl border border-gray-800 text-xs font-bold text-gray-500 peer-checked:border-bbo peer-checked:bg-bbo/10 peer-checked:text-bbo transition">♀️ WOMAN</div>
+                        </label>
+                    </div>
                 </div>
 
                 <!-- Urgency -->
                 <div>
-                    <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Urgency</label>
+                    <label
+                        class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Urgency</label>
                     <div class="grid grid-cols-3 gap-2">
                         <label class="cursor-pointer"><input type="radio" name="urgency" value="hot"
                                 class="hidden peer">
@@ -453,7 +493,8 @@
 
                 <!-- Notes -->
                 <div>
-                    <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Context / Notes</label>
+                    <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Context /
+                        Notes</label>
                     <textarea id="resultContext" rows="3"
                         class="w-full bg-gray-900 border border-gray-800 rounded-xl p-3 text-white text-sm focus:outline-none focus:border-bbo transition leading-relaxed"
                         placeholder="What did they want? Any extra context..."></textarea>
@@ -514,7 +555,6 @@
         let stagedFull = null;
         let editingId = null; // null = new contact, number = editing existing
         let modalScreenshot = null; // holds screenshot for the currently open modal
-
         const $ = id => document.getElementById(id);
 
         const ALL_LABELS = [
@@ -528,6 +568,9 @@
             { value: 'Brand Ambassador', emoji: '🌟' },
             { value: 'Camera People', emoji: '📷' },
             { value: 'BBO Assistants', emoji: '🛠️' },
+            { value: 'Fan Club', emoji: '⭐' },
+            { value: 'Celeb', emoji: '👑' },
+            { value: 'Podcast Guest', emoji: '🎙️' },
         ];
 
         // ===== INIT =====
@@ -701,17 +744,19 @@
 
         // ===== TAB SWITCHING =====
         window.switchTab = function (tab) {
+            $('captureTab').classList.add('hidden');
+            $('leadsTab').classList.add('hidden');
+            ['navCapture', 'navLeads'].forEach(function (id) {
+                var el = $(id);
+                if (el) { el.classList.remove('text-bbo'); el.classList.add('text-gray-600'); }
+            });
             if (tab === 'capture') {
                 $('captureTab').classList.remove('hidden');
-                $('leadsTab').classList.add('hidden');
                 $('navCapture').classList.replace('text-gray-600', 'text-bbo');
-                $('navLeads').classList.replace('text-bbo', 'text-gray-600');
                 updateStateCounts();
-            } else {
-                $('captureTab').classList.add('hidden');
+            } else if (tab === 'leads') {
                 $('leadsTab').classList.remove('hidden');
                 $('navLeads').classList.replace('text-gray-600', 'text-bbo');
-                $('navCapture').classList.replace('text-bbo', 'text-gray-600');
                 renderLeads();
             }
         };
@@ -837,11 +882,11 @@
         }
 
         function buildPrompt() {
-            return 'You are a CRM assistant for "Bad Bitches Only" (BBO), an urban lifestyle brand run by King Maker.\n\nAnalyze this screenshot of an Instagram DM or social media interaction. Extract as much as possible:\n{\n    "name": "their display name or real name if visible, otherwise empty string",\n    "handle": "the username without @",\n    "phone": "phone number if visible, otherwise empty string",\n    "email": "email address if visible, otherwise empty string",\n    "city": "city if mentioned or visible, otherwise empty string",\n    "state": "US state abbreviation if mentioned or visible (e.g. NJ, NY), otherwise empty string",\n    "labels": ["array of applicable labels from: Lead, Content Day, Creator, Partner, Hoodie, Event, Personal, Brand Ambassador, Camera People, BBO Assistants"],\n    "urgency": "hot (ready to buy/book), warm (interested), or cold (just browsing)",\n    "context": "1-2 sentence summary of what they want"\n}\n\nReturn ONLY valid JSON. No markdown, no code blocks. If a field is not visible, use empty string or empty array for labels.';
+            return 'You are a CRM assistant for "Bad Bitches Only" (BBO), an urban lifestyle brand run by King Maker.\n\nAnalyze this screenshot of an Instagram DM or social media interaction. Extract as much as possible:\n{\n    "name": "their display name or real name if visible, otherwise empty string",\n    "handle": "the username without @",\n    "phone": "phone number if visible, otherwise empty string",\n    "email": "email address if visible, otherwise empty string",\n    "city": "city if mentioned or visible, otherwise empty string",\n    "state": "US state abbreviation if mentioned or visible (e.g. NJ, NY), otherwise empty string",\n    "gender": "Man or Woman if you can determine from the profile picture, name, or conversation context, otherwise empty string",\n    "labels": ["array of applicable labels from: Lead, Content Day, Creator, Partner, Hoodie, Event, Personal, Brand Ambassador, Camera People, BBO Assistants, Fan Club, Celeb, Podcast Guest"],\n    "urgency": "hot (ready to buy/book), warm (interested), or cold (just browsing)",\n    "context": "1-2 sentence summary of what they want"\n}\n\nReturn ONLY valid JSON. No markdown, no code blocks. If a field is not visible, use empty string or empty array for labels.';
         }
 
         function buildPromptWithNotes(notes) {
-            return 'You are a CRM assistant for "Bad Bitches Only" (BBO), an urban lifestyle brand run by King Maker.\n\nI\'m giving you TWO inputs about the SAME contact:\n1. A SCREENSHOT of a DM or social media interaction\n2. MY NOTES with extra context about this person\n\nCombine both to extract the most complete picture:\n{\n    "name": "their display name or real name if visible, otherwise empty string",\n    "handle": "the username without @ (prefer what you see in the screenshot)",\n    "phone": "phone number if visible or mentioned in notes, otherwise empty string",\n    "email": "email address if visible or mentioned in notes, otherwise empty string",\n    "city": "city if mentioned or visible, otherwise empty string",\n    "state": "US state abbreviation if mentioned or visible (e.g. NJ, NY), otherwise empty string",\n    "labels": ["array of applicable labels from: Lead, Content Day, Creator, Partner, Hoodie, Event, Personal, Brand Ambassador, Camera People, BBO Assistants"],\n    "urgency": "hot (ready to buy/book), warm (interested), or cold (just browsing)",\n    "context": "Combined 2-3 sentence summary using BOTH the screenshot AND my notes"\n}\n\nMY NOTES: "' + notes + '"\n\nReturn ONLY valid JSON. No markdown, no code blocks. If a field is not available, use empty string or empty array for labels.';
+            return 'You are a CRM assistant for "Bad Bitches Only" (BBO), an urban lifestyle brand run by King Maker.\n\nI\'m giving you TWO inputs about the SAME contact:\n1. A SCREENSHOT of a DM or social media interaction\n2. MY NOTES with extra context about this person\n\nCombine both to extract the most complete picture:\n{\n    "name": "their display name or real name if visible, otherwise empty string",\n    "handle": "the username without @ (prefer what you see in the screenshot)",\n    "phone": "phone number if visible or mentioned in notes, otherwise empty string",\n    "email": "email address if visible or mentioned in notes, otherwise empty string",\n    "city": "city if mentioned or visible, otherwise empty string",\n    "state": "US state abbreviation if mentioned or visible (e.g. NJ, NY), otherwise empty string",\n    "gender": "Man or Woman if you can determine from the profile picture, name, conversation, or notes, otherwise empty string",\n    "labels": ["array of applicable labels from: Lead, Content Day, Creator, Partner, Hoodie, Event, Personal, Brand Ambassador, Camera People, BBO Assistants, Fan Club, Celeb, Podcast Guest"],\n    "urgency": "hot (ready to buy/book), warm (interested), or cold (just browsing)",\n    "context": "Combined 2-3 sentence summary using BOTH the screenshot AND my notes"\n}\n\nMY NOTES: "' + notes + '"\n\nReturn ONLY valid JSON. No markdown, no code blocks. If a field is not available, use empty string or empty array for labels.';
         }
 
         function cleanJSON(text) {
@@ -892,6 +937,7 @@
             $('resultState').value = '';
             $('resultContext').value = '';
             setSelectedLabels([]);
+            document.querySelector('input[name="gender"][value=""]').checked = true;
             document.querySelector('input[name="urgency"][value="warm"]').checked = true;
             $('modalPreviewWrap').classList.add('hidden');
         }
@@ -909,6 +955,11 @@
             var labels = data.labels || [];
             if (!labels.length && data.category) labels = [data.category];
             setSelectedLabels(labels);
+
+            // Gender
+            var gen = data.gender || '';
+            var genRadio = document.querySelector('input[name="gender"][value="' + gen + '"]');
+            if (genRadio) genRadio.checked = true;
 
             // Urgency
             var urg = data.urgency || 'warm';
@@ -948,6 +999,7 @@
             if (!name && !handle) return toast('Enter at least a name', true);
 
             var urgencyEl = document.querySelector('input[name="urgency"]:checked');
+            var genderEl = document.querySelector('input[name="gender"]:checked');
             var labels = getSelectedLabels();
 
             var lead = {
@@ -960,6 +1012,7 @@
                 labels: labels,
                 category: labels[0] || '', // backward compat
                 urgency: urgencyEl ? urgencyEl.value : 'warm',
+                gender: genderEl ? genderEl.value : '',
                 context: $('resultContext').value.trim(),
                 screenshot: modalScreenshot || null,
                 source: editingId ? 'edited' : (modalScreenshot ? 'screenshot' : 'manual'),
@@ -984,7 +1037,7 @@
                     try {
                         await fetch(webhookUrl, {
                             method: 'POST', headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ name: lead.name, handle: lead.handle, phone: lead.phone, email: lead.email, city: lead.city, state: lead.state, labels: lead.labels, urgency: lead.urgency, context: lead.context, timestamp: lead.created_at })
+                            body: JSON.stringify({ name: lead.name, handle: lead.handle, phone: lead.phone, email: lead.email, city: lead.city, state: lead.state, gender: lead.gender, labels: lead.labels, urgency: lead.urgency, context: lead.context, timestamp: lead.created_at })
                         });
                     } catch (e) { console.warn('Webhook failed:', e); }
                 }
@@ -1038,12 +1091,13 @@
             var search = ($('searchInput') ? $('searchInput').value : '').toLowerCase();
             var filtered = all.filter(function (l) {
                 var labels = l.labels || (l.category ? [l.category] : []);
-                var searchText = [l.name, l.handle, l.context, l.phone, l.email, l.city, l.state].concat(labels).join(' ').toLowerCase();
+                var searchText = [l.name, l.handle, l.context, l.phone, l.email, l.city, l.state, l.gender].concat(labels).join(' ').toLowerCase();
                 if (search && searchText.indexOf(search) === -1) return false;
                 if (currentFilter === 'all') return true;
                 if (currentFilter === 'hot' || currentFilter === 'warm' || currentFilter === 'cold') return l.urgency === currentFilter;
                 if (currentFilter === 'NJ') return isNJ(l.state);
                 if (currentFilter === 'NY') return isNY(l.state);
+                if (currentFilter === 'Man' || currentFilter === 'Woman') return l.gender === currentFilter;
                 return labels.indexOf(currentFilter) !== -1;
             });
             filtered.sort(function (a, b) { return new Date(b.created_at) - new Date(a.created_at); });
@@ -1074,6 +1128,9 @@
                 if (l.email) contactBits.push('✉️ ' + esc(l.email));
                 var contactDisplay = contactBits.length ? '<div class="flex flex-wrap gap-3 text-[10px] text-gray-500">' + contactBits.join('') + '</div>' : '';
 
+                // Gender badge
+                var genderBadge = l.gender ? '<span class="inline-block text-[10px] font-semibold px-2 py-0.5 rounded ' + (l.gender === 'Woman' ? 'bg-bbo/15 text-bbo' : 'bg-blue-500/15 text-blue-400') + '">' + (l.gender === 'Woman' ? '♀️' : '♂️') + ' ' + l.gender + '</span>' : '';
+
                 // Label pills
                 var labelHtml = labels.map(function (lb) {
                     return '<span class="inline-block text-[10px] font-semibold px-2 py-0.5 rounded bg-gray-800 text-gray-400">' + esc(lb) + '</span>';
@@ -1083,7 +1140,7 @@
                     '<div class="flex justify-between items-start"><div class="flex items-center flex-wrap gap-1"><span class="font-bold text-sm text-white">' + nameDisplay + '</span>' + handleDisplay + '</div><span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full shrink-0 ' + urgClass + '">' + l.urgency + '</span></div>' +
                     (locDisplay ? '<div>' + locDisplay + '</div>' : '') +
                     contactDisplay +
-                    (labelHtml ? '<div class="flex flex-wrap gap-1">' + labelHtml + '</div>' : '') +
+                    ((genderBadge || labelHtml) ? '<div class="flex flex-wrap gap-1">' + genderBadge + labelHtml + '</div>' : '') +
                     '<p class="text-xs text-gray-400 leading-relaxed">' + (esc(l.context) || '<span class="text-gray-600">No notes</span>') + '</p>' +
                     '<div class="flex justify-between items-center pt-1 border-t border-gray-800/50"><span class="text-[10px] text-gray-600">' + date + ' · ' + time + '</span>' +
                     '<button onclick="event.stopPropagation(); window._deleteLead(' + l.id + ')" class="text-[10px] text-red-500/60 hover:text-red-400 font-semibold transition">DELETE</button></div></div>';
@@ -1124,7 +1181,7 @@
         window.exportCSV = async function () {
             var leads = await dbGetAll();
             if (!leads.length) return toast('No contacts to export', true);
-            var headers = ['Name', 'Handle', 'Phone', 'Email', 'City', 'State', 'Labels', 'Urgency', 'Context', 'Date'];
+            var headers = ['Name', 'Handle', 'Phone', 'Email', 'City', 'State', 'Gender', 'Labels', 'Urgency', 'Context', 'Date'];
             var rows = leads.map(function (l) {
                 var labels = (l.labels || (l.category ? [l.category] : [])).join('; ');
                 return [
@@ -1134,6 +1191,7 @@
                     l.email || '',
                     l.city || '',
                     l.state || '',
+                    l.gender || '',
                     '"' + labels.replace(/"/g, '""') + '"',
                     l.urgency || '',
                     '"' + (l.context || '').replace(/"/g, '""') + '"',
