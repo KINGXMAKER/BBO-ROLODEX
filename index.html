@@ -549,12 +549,22 @@
     </div>
 
     <!-- JAVASCRIPT -->
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, setDoc, query, orderBy, getDoc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAyiCa9-NcwVfhOoCeNVBl8HhYd1ZZCZ3Q",
+            authDomain: "bbo-rolodex-77516.firebaseapp.com",
+            projectId: "bbo-rolodex-77516",
+            storageBucket: "bbo-rolodex-77516.firebasestorage.app",
+            messagingSenderId: "131756116847",
+            appId: "1:131756116847:web:3d92b0eac010218fb4369a"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
         // ===== STATE =====
-        const DB_NAME = 'bbo_rolodex';
-        const DB_VERSION = 2;
-        const STORE = 'leads';
-        let db;
         let currentFilter = 'all';
         let stagedBase64 = null;
         let stagedMime = null;
@@ -584,8 +594,6 @@
         // ===== INIT =====
         (async () => {
             buildLabelPills();
-            await initDB();
-            await migrateV1Data();
             await renderLeads();
             await updateStateCounts();
             loadSettings();
@@ -614,82 +622,50 @@
             });
         }
 
-        // ===== INDEXEDDB =====
-        function initDB() {
-            return new Promise((resolve, reject) => {
-                const req = indexedDB.open(DB_NAME, DB_VERSION);
-                req.onupgradeneeded = e => {
-                    const d = e.target.result;
-                    const tx = e.target.transaction;
-                    if (!d.objectStoreNames.contains(STORE)) {
-                        const s = d.createObjectStore(STORE, { keyPath: 'id', autoIncrement: true });
-                        s.createIndex('handle', 'handle');
-                        s.createIndex('urgency', 'urgency');
-                        s.createIndex('category', 'category');
-                        s.createIndex('created_at', 'created_at');
-                        s.createIndex('name', 'name');
-                        s.createIndex('state', 'state');
-                    } else {
-                        const s = tx.objectStore(STORE);
-                        if (!s.indexNames.contains('name')) s.createIndex('name', 'name');
-                        if (!s.indexNames.contains('state')) s.createIndex('state', 'state');
-                    }
-                };
-                req.onsuccess = e => { db = e.target.result; resolve(); };
-                req.onerror = e => reject(e);
-            });
-        }
-
-        // Migrate v1 records: category string → labels array, add name field
-        async function migrateV1Data() {
-            var all = await dbGetAll();
-            for (var i = 0; i < all.length; i++) {
-                var lead = all[i];
-                var needsUpdate = false;
-                if (lead.category && !lead.labels) {
-                    lead.labels = [lead.category];
-                    needsUpdate = true;
-                }
-                if (!lead.name) {
-                    lead.name = lead.handle || '';
-                    needsUpdate = true;
-                }
-                if (needsUpdate) {
-                    await dbPut(lead);
-                }
+        // ===== FIRESTORE DB =====
+        async function dbAdd(lead) {
+            try {
+                const docRef = await addDoc(collection(db, 'leads'), lead);
+                return docRef.id;
+            } catch (e) {
+                console.error("Error adding document: ", e);
+                throw e;
             }
         }
 
-        function dbAdd(lead) {
-            return new Promise((resolve, reject) => {
-                const tx = db.transaction(STORE, 'readwrite');
-                tx.objectStore(STORE).add(lead).onsuccess = e => resolve(e.target.result);
-                tx.onerror = e => reject(e);
-            });
+        async function dbPut(lead) {
+            try {
+                if (!lead.id) return dbAdd(lead);
+                await setDoc(doc(db, 'leads', String(lead.id)), lead);
+                return String(lead.id);
+            } catch (e) {
+                console.error("Error updating document: ", e);
+                throw e;
+            }
         }
 
-        function dbPut(lead) {
-            return new Promise((resolve, reject) => {
-                const tx = db.transaction(STORE, 'readwrite');
-                tx.objectStore(STORE).put(lead).onsuccess = e => resolve(e.target.result);
-                tx.onerror = e => reject(e);
-            });
+        async function dbGetAll() {
+            try {
+                const q = query(collection(db, 'leads'));
+                const querySnapshot = await getDocs(q);
+                const leads = [];
+                querySnapshot.forEach((doc) => {
+                    leads.push({ id: doc.id, ...doc.data() });
+                });
+                return leads;
+            } catch (e) {
+                console.error("Error getting documents: ", e);
+                return [];
+            }
         }
 
-        function dbGetAll() {
-            return new Promise((resolve, reject) => {
-                const tx = db.transaction(STORE, 'readonly');
-                tx.objectStore(STORE).getAll().onsuccess = e => resolve(e.target.result);
-                tx.onerror = e => reject(e);
-            });
-        }
-
-        function dbDelete(id) {
-            return new Promise((resolve, reject) => {
-                const tx = db.transaction(STORE, 'readwrite');
-                tx.objectStore(STORE).delete(id).onsuccess = () => resolve();
-                tx.onerror = e => reject(e);
-            });
+        async function dbDelete(id) {
+            try {
+                await deleteDoc(doc(db, 'leads', String(id)));
+            } catch (e) {
+                console.error("Error deleting document: ", e);
+                throw e;
+            }
         }
 
         // ===== STATE HELPERS =====
@@ -1059,12 +1035,17 @@
             await updateStateCounts();
         });
 
-        function dbGetById(id) {
-            return new Promise((resolve, reject) => {
-                const tx = db.transaction(STORE, 'readonly');
-                tx.objectStore(STORE).get(id).onsuccess = e => resolve(e.target.result);
-                tx.onerror = e => reject(e);
-            });
+        async function dbGetById(id) {
+            try {
+                const docSnap = await getDoc(doc(db, 'leads', String(id)));
+                if (docSnap.exists()) {
+                    return { id: docSnap.id, ...docSnap.data() };
+                }
+                return null;
+            } catch (e) {
+                console.error("Error getting document:", e);
+                return null;
+            }
         }
 
         // ===== COPY =====
@@ -1144,14 +1125,14 @@
                     return '<span class="inline-block text-[10px] font-semibold px-2 py-0.5 rounded bg-gray-800 text-gray-400">' + esc(lb) + '</span>';
                 }).join(' ');
 
-                return '<div class="card-in bg-gray-900/60 border border-gray-800 rounded-xl p-4 space-y-2 cursor-pointer" onclick="window._editLead(' + l.id + ')">' +
+                return '<div class="card-in bg-gray-900/60 border border-gray-800 rounded-xl p-4 space-y-2 cursor-pointer" onclick="window._editLead(\'' + l.id + '\')">' +
                     '<div class="flex justify-between items-start"><div class="flex items-center flex-wrap gap-1"><span class="font-bold text-sm text-white">' + nameDisplay + '</span>' + handleDisplay + '</div><span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full shrink-0 ' + urgClass + '">' + l.urgency + '</span></div>' +
                     (locDisplay ? '<div>' + locDisplay + '</div>' : '') +
                     contactDisplay +
                     ((genderBadge || labelHtml) ? '<div class="flex flex-wrap gap-1">' + genderBadge + labelHtml + '</div>' : '') +
                     '<p class="text-xs text-gray-400 leading-relaxed">' + (esc(l.context) || '<span class="text-gray-600">No notes</span>') + '</p>' +
                     '<div class="flex justify-between items-center pt-1 border-t border-gray-800/50"><span class="text-[10px] text-gray-600">' + date + ' · ' + time + '</span>' +
-                    '<button onclick="event.stopPropagation(); window._deleteLead(' + l.id + ')" class="text-[10px] text-red-500/60 hover:text-red-400 font-semibold transition">DELETE</button></div></div>';
+                    '<button onclick="event.stopPropagation(); window._deleteLead(\'' + l.id + '\')" class="text-[10px] text-red-500/60 hover:text-red-400 font-semibold transition">DELETE</button></div></div>';
             }).join('');
         }
 
