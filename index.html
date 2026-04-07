@@ -597,7 +597,40 @@
             await renderLeads();
             await updateStateCounts();
             loadSettings();
+            initServiceWorkerAndShare();
         })();
+
+        // ===== SERVICE WORKER & SHARE TARGET =====
+        async function initServiceWorkerAndShare() {
+            if ('serviceWorker' in navigator) {
+                try {
+                    await navigator.serviceWorker.register('sw.js');
+                } catch (e) {
+                    console.warn('SW failed', e);
+                }
+            }
+
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('shared') === 'true') {
+                try {
+                    const cache = await caches.open('bbo-share-cache');
+                    const resp = await cache.match('/shared-image');
+                    if (resp) {
+                        const blob = await resp.blob();
+                        const file = new File([blob], 'shared-image.jpg', { type: blob.type });
+                        
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                        await cache.delete('/shared-image');
+                        
+                        switchTab('capture');
+                        stageScreenshot(file);
+                        toast('Screenshot loaded from Share! 🚀');
+                    }
+                } catch (e) {
+                    console.error('Share load failed', e);
+                }
+            }
+        }
 
         // ===== BUILD LABEL PILLS =====
         function buildLabelPills() {
@@ -763,6 +796,24 @@
             const f = e.target.files[0];
             if (f) stageScreenshot(f);
             $('imageInput').value = '';
+        });
+
+        // 🔥 PASTE FROM CLIPBOARD SUPPORT (CRITICAL FOR iOS)
+        document.addEventListener('paste', e => {
+            // Looking for an image in the clipboard data
+            const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+            for (let index in items) {
+                const item = items[index];
+                if (item.kind === 'file' && item.type.startsWith('image/')) {
+                    const file = item.getAsFile();
+                    if (file) {
+                        e.preventDefault();
+                        stageScreenshot(file);
+                        toast('Image pasted! 🚀');
+                        break;
+                    }
+                }
+            }
         });
 
         // COMPRESS IMAGE
