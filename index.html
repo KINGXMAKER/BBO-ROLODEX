@@ -111,8 +111,9 @@
 
         .staged-img {
             width: 100%;
-            height: 220px;
-            object-fit: cover;
+            max-height: 380px;
+            object-fit: contain;
+            background: #0d0d0d;
             border-radius: 16px;
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
@@ -392,7 +393,7 @@
             </div>
             <div class="p-5 space-y-4">
                 <div id="modalPreviewWrap" class="hidden"><img id="modalPreview"
-                        class="w-full h-40 object-cover rounded-xl border border-gray-800"></div>
+                        class="w-full max-h-96 object-contain bg-black rounded-xl border border-gray-800"></div>
 
                 <!-- Name -->
                 <div>
@@ -405,8 +406,10 @@
 
                 <!-- Handle -->
                 <div>
-                    <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Handle
-                        <span class="text-gray-700">(optional)</span></label>
+                    <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5 flex justify-between items-center">
+                        <span>Handle <span class="text-gray-700">(optional)</span></span>
+                        <a id="goToInstagramLink" href="#" target="_blank" class="hidden text-bbo hover:underline text-[9px] font-bold">🔗 OPEN INSTAGRAM</a>
+                    </label>
                     <div class="relative">
                         <span class="absolute left-3 top-2.5 text-bbo font-bold text-sm">@</span>
                         <input type="text" id="resultHandle"
@@ -508,6 +511,32 @@
                         class="w-full bg-gray-900 border border-gray-800 rounded-xl p-3 text-white text-sm focus:outline-none focus:border-bbo transition leading-relaxed"
                         placeholder="What did they want? Any extra context..."></textarea>
                 </div>
+
+                <!-- AI Pitch Generator -->
+                <div class="border-t border-gray-800/50 pt-4 mt-2 space-y-3">
+                    <button type="button" id="generatePitchBtn" onclick="window._generateAIPitch()"
+                        class="w-full py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90 text-white font-bold text-xs transition flex justify-center items-center gap-2">
+                        ⚡ DRAFT PITCH WITH GEMINI
+                    </button>
+                    <div id="pitchOutputArea" class="hidden space-y-3 animate-slide-up">
+                        <div>
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Instagram DM Pitch</label>
+                                <button type="button" onclick="window._copyTextFromInput('pitchDmOutput')" class="text-[9px] font-bold text-bbo hover:underline">COPY</button>
+                            </div>
+                            <textarea id="pitchDmOutput" rows="3" readonly
+                                class="w-full bg-black border border-gray-800 rounded-xl p-3 text-gray-300 text-xs font-mono leading-relaxed focus:outline-none"></textarea>
+                        </div>
+                        <div>
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Email Pitch</label>
+                                <button type="button" onclick="window._copyTextFromInput('pitchEmailOutput')" class="text-[9px] font-bold text-bbo hover:underline">COPY</button>
+                            </div>
+                            <textarea id="pitchEmailOutput" rows="4" readonly
+                                class="w-full bg-black border border-gray-800 rounded-xl p-3 text-gray-300 text-xs leading-relaxed focus:outline-none"></textarea>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="p-4 border-t border-gray-800/50 flex gap-3 sticky bottom-0 bg-[#0D0D0D]">
                 <button id="copyBtn"
@@ -602,6 +631,7 @@
             await updateStateCounts();
             loadSettings();
             initServiceWorkerAndShare();
+            if ($('resultHandle')) $('resultHandle').addEventListener('input', () => { if (window._updateInstagramLink) window._updateInstagramLink(); });
         })();
 
         // ===== SERVICE WORKER & SHARE TARGET =====
@@ -979,11 +1009,15 @@
             document.querySelector('input[name="gender"][value=""]').checked = true;
             document.querySelector('input[name="urgency"][value="warm"]').checked = true;
             $('modalPreviewWrap').classList.add('hidden');
+            if ($('pitchOutputArea')) $('pitchOutputArea').classList.add('hidden');
+            if ($('pitchDmOutput')) $('pitchDmOutput').value = '';
+            if ($('pitchEmailOutput')) $('pitchEmailOutput').value = '';
+            if (window._updateInstagramLink) window._updateInstagramLink();
         }
 
         function populateModalFields(data, screenshot) {
             $('resultName').value = data.name || '';
-            $('resultHandle').value = (data.handle || '').replace('@', '');
+            $('resultHandle').value = (data.handle || '').replace('@', '').trim();
             $('resultPhone').value = data.phone || '';
             $('resultEmail').value = data.email || '';
             $('resultCity').value = data.city || '';
@@ -1013,6 +1047,7 @@
             } else {
                 $('modalPreviewWrap').classList.add('hidden');
             }
+            if (window._updateInstagramLink) window._updateInstagramLink();
         }
 
         function populateModal(data, screenshot) {
@@ -1160,7 +1195,8 @@
 
                 // Name line
                 var nameDisplay = esc(l.name || l.handle || 'Unnamed');
-                var handleDisplay = l.handle ? '<span class="text-bbo text-xs font-mono ml-1">' + esc(l.handle) + '</span>' : '';
+                var rawHandle = (l.handle || '').replace('@', '').trim();
+                var handleDisplay = l.handle ? '<a href="https://instagram.com/' + encodeURIComponent(rawHandle) + '" target="_blank" onclick="event.stopPropagation()" class="text-bbo text-xs font-mono ml-1 hover:underline">@' + esc(rawHandle) + '</a>' : '';
 
                 // Location line
                 var locParts = [l.city, l.state].filter(Boolean);
@@ -1168,8 +1204,8 @@
 
                 // Contact info
                 var contactBits = [];
-                if (l.phone) contactBits.push('📱 ' + esc(l.phone));
-                if (l.email) contactBits.push('✉️ ' + esc(l.email));
+                if (l.phone) contactBits.push('<a href="tel:' + encodeURIComponent(l.phone) + '" onclick="event.stopPropagation()" class="hover:underline">📱 ' + esc(l.phone) + '</a>');
+                if (l.email) contactBits.push('<a href="mailto:' + encodeURIComponent(l.email) + '" onclick="event.stopPropagation()" class="hover:underline">✉️ ' + esc(l.email) + '</a>');
                 var contactDisplay = contactBits.length ? '<div class="flex flex-wrap gap-3 text-[10px] text-gray-500">' + contactBits.join('') + '</div>' : '';
 
                 // Gender badge
@@ -1180,13 +1216,21 @@
                     return '<span class="inline-block text-[10px] font-semibold px-2 py-0.5 rounded bg-gray-800 text-gray-400">' + esc(lb) + '</span>';
                 }).join(' ');
 
-                return '<div class="card-in bg-gray-900/60 border border-gray-800 rounded-xl p-4 space-y-2 cursor-pointer" onclick="window._editLead(\'' + l.id + '\')">' +
-                    '<div class="flex justify-between items-start"><div class="flex items-center flex-wrap gap-1"><span class="font-bold text-sm text-white">' + nameDisplay + '</span>' + handleDisplay + '</div><span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full shrink-0 ' + urgClass + '">' + l.urgency + '</span></div>' +
-                    (locDisplay ? '<div>' + locDisplay + '</div>' : '') +
-                    contactDisplay +
-                    ((genderBadge || labelHtml) ? '<div class="flex flex-wrap gap-1">' + genderBadge + labelHtml + '</div>' : '') +
-                    '<p class="text-xs text-gray-400 leading-relaxed">' + (esc(l.context) || '<span class="text-gray-600">No notes</span>') + '</p>' +
-                    '<div class="flex justify-between items-center pt-1 border-t border-gray-800/50"><span class="text-[10px] text-gray-600">' + date + ' · ' + time + '</span>' +
+                // Screenshot thumbnail on card
+                var imgHtml = l.screenshot ? '<div class="w-14 h-20 shrink-0 rounded-lg overflow-hidden border border-gray-800 bg-black flex items-center justify-center"><img src="' + l.screenshot + '" class="w-full h-full object-cover"></div>' : '';
+
+                return '<div class="card-in bg-gray-900/60 border border-gray-800 rounded-xl p-4 cursor-pointer" onclick="window._editLead(\'' + l.id + '\')">' +
+                    '<div class="flex gap-3">' +
+                        '<div class="flex-1 min-w-0 space-y-2">' +
+                            '<div class="flex justify-between items-start"><div class="flex items-center flex-wrap gap-1"><span class="font-bold text-sm text-white">' + nameDisplay + '</span>' + handleDisplay + '</div><span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full shrink-0 ' + urgClass + '">' + l.urgency + '</span></div>' +
+                            (locDisplay ? '<div>' + locDisplay + '</div>' : '') +
+                            contactDisplay +
+                            ((genderBadge || labelHtml) ? '<div class="flex flex-wrap gap-1">' + genderBadge + labelHtml + '</div>' : '') +
+                            '<p class="text-xs text-gray-400 leading-relaxed">' + (esc(l.context) || '<span class="text-gray-600">No notes</span>') + '</p>' +
+                        '</div>' +
+                        imgHtml +
+                    '</div>' +
+                    '<div class="flex justify-between items-center pt-2 mt-2 border-t border-gray-800/50"><span class="text-[10px] text-gray-600">' + date + ' · ' + time + '</span>' +
                     '<button onclick="event.stopPropagation(); window._deleteLead(\'' + l.id + '\')" class="text-[10px] text-red-500/60 hover:text-red-400 font-semibold transition">DELETE</button></div></div>';
             }).join('');
         }
@@ -1259,6 +1303,80 @@
             $('toast').classList.add('show');
             setTimeout(function () { $('toast').classList.remove('show'); }, 3000);
         }
+
+        // ===== AI PITCH GENERATOR =====
+        window._generateAIPitch = async function () {
+            var key = localStorage.getItem('bbo_gemini_key');
+            if (!key) return toast('API Key missing — tap ⚙️ Settings', true);
+
+            var name = $('resultName').value.trim();
+            var handle = $('resultHandle').value.trim();
+            var city = $('resultCity').value.trim();
+            var state = $('resultState').value.trim();
+            var context = $('resultContext').value.trim();
+            var labels = getSelectedLabels();
+
+            var btn = $('generatePitchBtn');
+            var originalText = btn.innerHTML;
+            btn.innerHTML = '⚡ GENERATING PITCH...';
+            btn.disabled = true;
+
+            try {
+                var promptText = 'You are a veteran sales closer and copywriter for "Bad Bitches Only" (BBO), an urban lifestyle media brand run by King Maker. You talk with the authority of a high-end content agency and lifestyle ecosystem. Write a personalized cold outreach pitch.\n\nTarget Details:\nName: ' + name + '\nInstagram: @' + handle + '\nLocation: ' + [city, state].filter(Boolean).join(', ') + '\nLabels/Category: ' + labels.join(', ') + '\nNotes/Context: ' + context + '\n\nInstructions:\n- Write a cold IG DM (under 450 characters) in BBO\'s street-lux voice. Highlight what we bring (real content, attractive energy, cultural visibility). Mention portfolio links at the end.\n- Write a cold email pitch (under 120 words). Contrast BBO\'s multi-creator model vs a single influencer. Offer comped meal spread or up to 20 creators at 50% off.\n- Portfolio links to include:\n  https://www.instagram.com/dabboshow/reel/DXvH2HIRf-3/\n  https://www.instagram.com/reel/DYYanF-Fr96/\n  https://www.instagram.com/dabboshow/reel/DXzJIMmRKmz/\n  https://www.instagram.com/p/DX7Ro4jGsnt/?img_index=2\n\nReturn RAW JSON ONLY matching this structure (no markdown fences, no extra text):\n{\n  "dm": "",\n  "email": ""\n}';
+
+                var url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + key;
+                var body = {
+                    contents: [{ parts: [{ text: promptText }] }]
+                };
+
+                var resp = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+
+                if (!resp.ok) {
+                    var errorBody = await resp.text();
+                    throw new Error('API error: ' + errorBody.substring(0, 100));
+                }
+
+                var json = await resp.json();
+                var text = json.candidates[0].content.parts[0].text;
+                var cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();
+                var parsed = JSON.parse(cleaned);
+
+                $('pitchDmOutput').value = parsed.dm || '';
+                $('pitchEmailOutput').value = parsed.email || '';
+                $('pitchOutputArea').classList.remove('hidden');
+                toast('Pitch drafted successfully! 🔥');
+            } catch (err) {
+                console.error(err);
+                toast('❌ Generation failed: ' + (err.message || String(err)).substring(0, 50), true);
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        };
+
+        window._copyTextFromInput = function (id) {
+            var el = $(id);
+            el.select();
+            navigator.clipboard.writeText(el.value);
+            toast('Copied to clipboard! 📋');
+        };
+
+        window._updateInstagramLink = function () {
+            var handleInput = $('resultHandle');
+            var linkEl = $('goToInstagramLink');
+            if (!handleInput || !linkEl) return;
+            var handle = handleInput.value.trim().replace('@', '');
+            if (handle) {
+                linkEl.href = 'https://instagram.com/' + encodeURIComponent(handle);
+                linkEl.classList.remove('hidden');
+            } else {
+                linkEl.classList.add('hidden');
+            }
+        };
     </script>
 </body>
 
