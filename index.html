@@ -910,43 +910,77 @@
             } catch (err) {
                 console.error('Parse error:', err);
                 var msg = err.message || String(err);
-                if (msg.indexOf('API key') > -1 || msg.indexOf('401') > -1 || msg.indexOf('403') > -1) msg = 'Invalid API key — tap ⚙️ to fix';
-                else if (msg.indexOf('quota') > -1 || msg.indexOf('429') > -1) msg = 'API limit hit — wait a minute';
-                else msg = msg.substring(0, 120);
+                msg = msg.substring(0, 120);
                 toast('❌ ' + msg, true);
             }
             showLoading(false);
         };
 
         // ===== GEMINI REST API =====
-        async function callGemini(promptText, imageBase64, imageMime) {
-            var apiKey = localStorage.getItem('bbo_gemini_key');
-            if (!apiKey) throw new Error('No API key — tap ⚙️ Settings');
+        // Optional built-in free-tier key. Leave empty to use only the key saved in ⚙️ Settings.
+        // If you fill this in, restrict it to https://kingxmaker.github.io/* in Google Cloud Console.
+        var DEFAULT_GEMINI_KEY = "AIzaSyD7GIjy97QXu82RAj0aXvjnBkIA1YxAb3k";
+        var GEMINI_MODELS = ['gemini-2.5-flash', 'gemini-2.5-flash-lite'];
 
-            var url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + apiKey;
+        function geminiStatus(status) {
+            if (status === 400 || status === 401 || status === 403) return 'Gemini key rejected (' + status + ') — tap ⚙️ and paste a fresh key';
+            if (status === 429) return 'Gemini free-tier limit hit — wait a minute and retry';
+            if (status >= 500) return 'Gemini is overloaded — try again';
+            return 'Gemini error ' + status;
+        }
 
-            var body = {
-                contents: [{
-                    parts: [
-                        { text: promptText },
-                        { inline_data: { mime_type: imageMime, data: imageBase64 } }
-                    ]
-                }]
-            };
-
+        async function geminiFetch(model, key, parts) {
+            var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent';
             var resp = await fetch(url, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
+                headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+                body: JSON.stringify({ contents: [{ parts: parts }] })
             });
-
             if (!resp.ok) {
-                var errorBody = await resp.text();
-                throw new Error('API error ' + resp.status + ': ' + errorBody.substring(0, 200));
+                var e = new Error(geminiStatus(resp.status));
+                e.status = resp.status;
+                throw e;
             }
-
             var json = await resp.json();
-            var text = json.candidates[0].content.parts[0].text;
+            var cand = json.candidates && json.candidates[0];
+            var text = cand && cand.content && cand.content.parts && cand.content.parts[0] && cand.content.parts[0].text;
+            if (!text) throw new Error('Gemini returned no text (blocked or empty)');
+            return text;
+        }
+
+        // Saved key first, then default key. On 429/5xx: one retry, then fall back to flash-lite.
+        async function callGeminiText(parts) {
+            var saved = (localStorage.getItem('bbo_gemini_key') || '').trim();
+            var keys = [saved, DEFAULT_GEMINI_KEY].filter(function (k, i, a) { return k && a.indexOf(k) === i; });
+            if (!keys.length) throw new Error('No Gemini key — tap ⚙️ Settings and paste one');
+            var lastErr;
+            for (var k = 0; k < keys.length; k++) {
+                keyLoop:
+                for (var m = 0; m < GEMINI_MODELS.length; m++) {
+                    for (var attempt = 0; attempt < 2; attempt++) {
+                        try {
+                            return await geminiFetch(GEMINI_MODELS[m], keys[k], parts);
+                        } catch (err) {
+                            lastErr = err;
+                            var st = err.status;
+                            if (st === 400 || st === 401 || st === 403) break keyLoop; // bad key: try next key
+                            if (st === 429 || st >= 500) {
+                                if (attempt === 0) await new Promise(function (r) { setTimeout(r, 1500); });
+                                continue;
+                            }
+                            throw err;
+                        }
+                    }
+                }
+            }
+            throw lastErr;
+        }
+
+        async function callGemini(promptText, imageBase64, imageMime) {
+            var text = await callGeminiText([
+                { text: promptText },
+                { inline_data: { mime_type: imageMime, data: imageBase64 } }
+            ]);
             return cleanJSON(text);
         }
 
@@ -1306,9 +1340,6 @@
 
         // ===== AI PITCH GENERATOR =====
         window._generateAIPitch = async function () {
-            var key = localStorage.getItem('bbo_gemini_key');
-            if (!key) return toast('API Key missing — tap ⚙️ Settings', true);
-
             var name = $('resultName').value.trim();
             var handle = $('resultHandle').value.trim();
             var city = $('resultCity').value.trim();
@@ -1324,24 +1355,7 @@
             try {
                 var promptText = 'You are a veteran sales closer and copywriter for "Bad Bitches Only" (BBO), an urban lifestyle media brand run by King Maker. You talk with the authority of a high-end content agency and lifestyle ecosystem. Write a personalized cold outreach pitch.\n\nTarget Details:\nName: ' + name + '\nInstagram: @' + handle + '\nLocation: ' + [city, state].filter(Boolean).join(', ') + '\nLabels/Category: ' + labels.join(', ') + '\nNotes/Context: ' + context + '\n\nInstructions:\n- Write a cold IG DM (under 450 characters) in BBO\'s street-lux voice. Highlight what we bring (real content, attractive energy, cultural visibility). Mention portfolio links at the end.\n- Write a cold email pitch (under 120 words). Contrast BBO\'s multi-creator model vs a single influencer. Offer comped meal spread or up to 20 creators at 50% off.\n- Portfolio links to include:\n  https://www.instagram.com/dabboshow/reel/DXvH2HIRf-3/\n  https://www.instagram.com/reel/DYYanF-Fr96/\n  https://www.instagram.com/dabboshow/reel/DXzJIMmRKmz/\n  https://www.instagram.com/p/DX7Ro4jGsnt/?img_index=2\n\nReturn RAW JSON ONLY matching this structure (no markdown fences, no extra text):\n{\n  "dm": "",\n  "email": ""\n}';
 
-                var url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + key;
-                var body = {
-                    contents: [{ parts: [{ text: promptText }] }]
-                };
-
-                var resp = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body)
-                });
-
-                if (!resp.ok) {
-                    var errorBody = await resp.text();
-                    throw new Error('API error: ' + errorBody.substring(0, 100));
-                }
-
-                var json = await resp.json();
-                var text = json.candidates[0].content.parts[0].text;
+                var text = await callGeminiText([{ text: promptText }]);
                 var cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();
                 var parsed = JSON.parse(cleaned);
 
@@ -1351,7 +1365,7 @@
                 toast('Pitch drafted successfully! 🔥');
             } catch (err) {
                 console.error(err);
-                toast('❌ Generation failed: ' + (err.message || String(err)).substring(0, 50), true);
+                toast('❌ ' + (err.message || String(err)).substring(0, 90), true);
             } finally {
                 btn.innerHTML = originalText;
                 btn.disabled = false;
