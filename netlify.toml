@@ -1,0 +1,9 @@
+# Netlify hosts ONLY the Gemini API endpoint. The app itself stays on GitHub Pages (main branch root).
+# Secrets are set in Netlify → Site configuration → Environment variables (scope: Functions), never here.
+[build]
+  publish = "netlify/public"
+  command = "npm test"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
