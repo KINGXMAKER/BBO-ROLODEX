@@ -5,11 +5,12 @@
   command = "npm test"
 
 [build.environment]
-  # index.html carries the Firebase web config apiKey, which is public by design (access is enforced by
-  # Firestore rules, not the key). Smart secret detection flags its AIza… shape, so skip that file only.
-  # Real secrets stay protected: Netlify still scans every file for the values of secret env vars, and
-  # test/gemini.test.mjs fails the build if index.html gains any other API key.
-  SECRETS_SCAN_SMART_DETECTION_OMIT_PATHS = "index.html"
+  # index.html carries the Firebase web config apiKey, which is public by design (Firestore access is
+  # enforced by security rules, not by this key) and already served on GitHub Pages. Smart secret
+  # detection flags its AIza… shape, so allow exactly this one value (OMIT_PATHS did not match).
+  # Real secrets stay protected: Netlify still scans all files for the values of secret env vars
+  # (e.g. GEMINI_API_KEY), and test/gemini.test.mjs fails the build if index.html gains another key.
+  SECRETS_SCAN_SMART_DETECTION_OMIT_VALUES = "AIzaSyAyiCa9-NcwVfhOoCeNVBl8HhYd1ZZCZ3Q"
 
 [functions]
   directory = "netlify/functions"
