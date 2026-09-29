@@ -170,4 +170,6 @@ test('frontend ships no Gemini key and never calls Gemini directly', () => {
   const keys = html.match(/AIza[0-9A-Za-z_-]{30,}/g) || [];
   assert.ok(keys.length <= 1, 'unexpected extra API keys in index.html');
   assert.ok(/apiKey:\s*"AIza/.test(html) || keys.length === 0);
+  // Newer Gemini keys use the AQ. format; none may ever appear in the page.
+  assert.ok(!/\bAQ\.[A-Za-z0-9_-]{20,}/.test(html), 'Gemini AQ. key found in index.html');
 });
